@@ -16,7 +16,7 @@ Este proyecto transforma un dataset masivo de transacciones de **Instacart** en 
 
 * **⏰ Ciclos de Fidelidad Siete-Días:** Existe una "marea" semanal de demanda que alcanza su pico los **domingos y lunes**, con un ciclo de reposición exacto de **7 días**.
 <p align="center">
-  <img src="images/orders_day.png" width="600">
+  <img src="images/last_order_days.png" width="600">
 </p>
 
 * **💎 Usuarios VIP:** Menos del **2% de los usuarios** mueven el **10% de las transacciones**, manteniendo una lealtad del **77%** en sus canastas básicas.
