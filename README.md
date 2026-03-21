@@ -5,10 +5,24 @@ Este proyecto transforma un dataset masivo de transacciones de **Instacart** en 
 ## 📊 Resumen Ejecutivo: Consumer Insights
 
 * **⚡ El Motor del Catálogo (Efecto Pareto):** Se identificó una concentración extrema donde solo el **1.7% de los productos** genera el **50% del volumen total** de ventas.
-* **🌿 La Ventaja Orgánica:** El segmento orgánico domina el Top 20 de ventas y presenta una tasa de recompra significativamente superior al promedio general.
-* **⏰ Ciclos de Fidelidad Siete-Días:** Existe una "marea" semanal de demanda que alcanza su pico los **domingos y lunes**, con un ciclo de reposición exacto de **7 días**.
-* **💎 Usuarios VIP:** Menos del **2% de los usuarios** mueven el **10% de las transacciones**, manteniendo una lealtad del **77%** en sus canastas básicas.
+<p align="center">
+  <img src="images/decil_prods.png" width="600">
+</p>
 
+* **🌿 La Ventaja Orgánica:** El segmento orgánico domina el Top 20 de ventas y presenta una tasa de recompra significativamente superior al promedio general.
+<p align="center">
+  <img src="images/Top20_prods_ratio.png" width="600">
+</p>
+
+* **⏰ Ciclos de Fidelidad Siete-Días:** Existe una "marea" semanal de demanda que alcanza su pico los **domingos y lunes**, con un ciclo de reposición exacto de **7 días**.
+<p align="center">
+  <img src="images/orders_day.png" width="600">
+</p>
+
+* **💎 Usuarios VIP:** Menos del **2% de los usuarios** mueven el **10% de las transacciones**, manteniendo una lealtad del **77%** en sus canastas básicas.
+<p align="center">
+  <img src="images/decil_usrs.png" width="600">
+</p>
 ---
 
 ## 🔬 Metodología y Hallazgos Críticos
@@ -23,11 +37,17 @@ Se implementó un protocolo de limpieza robusto para manejar anomalías del mund
 El análisis reveló una bimodalidad en la retención:
 * Los usuarios tienden a comprar en bloques de **7**, sugiriendo hábitos de reabastecimiento semanal.
 * **Insight:** Las campañas de *re-engagement* deberían activarse preventivamente en el **día 6** para capitalizar la inercia del hábito semanal.
+<p align="center">
+  <img src="images/nombre_imagen.png" width="800">
+</p>
 
 ### 3. 🎯 Segmentación por Deciles (Pareto Analysis) 
 Utilizando un enfoque de deciles de volumen, se descubrió:
 * **Decil 1 (Productos):** 18 productos estrella ($0.04\%$ del catálogo) son los responsables del primer $10\%$ de ingresos.
 * **Decil 1 (Clientes):** Solo 2,209 usuarios ($1.48\%$ de la base) generan el $10\%$ del volumen, con una tasa de recompra del **$77.3\%$**.
+<p align="center">
+  <img src="images/nombre_imagen.png" width="800">
+</p>
 
 ---
 
