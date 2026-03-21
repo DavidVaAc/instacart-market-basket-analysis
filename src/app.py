@@ -19,17 +19,17 @@ Esta aplicación interactiva presenta los hallazgos clave del análisis de compo
 @st.cache_data
 def load_data():
     # Asegúrate de que las rutas coincidan con tu estructura
-    orders = pd.read_csv('../data/instacart_orders.csv', sep=';')
+    orders = pd.read_csv('/data/instacart_orders.csv', sep=';')
     return orders
 
 def load_order_prod():
     # Asegúrate de que las rutas coincidan con tu estructura
-    order_prods = pd.read_csv('../data/order_products.csv', sep=';')
+    order_prods = pd.read_csv('/data/order_products.csv', sep=';')
     return order_prods
 
 def load_products():
     # Asegúrate de que las rutas coincidan con tu estructura
-    products = pd.read_csv('../data/products.csv', sep=';')
+    products = pd.read_csv('/data/products.csv', sep=';')
     return products
 
 try:
@@ -337,7 +337,7 @@ try:
           'count': 'Cantidad de productos por decil',
           'razon_recompra': 'Razón de recompra'
        },
-       title='Top 20 Productos con Mayor Tasa de Reincidencia'.title()
+       title='Razón de Recompra por Decil'.title()
     )
 
     # 3. Ajustes estéticos (Modo Oscuro y Limpieza)
