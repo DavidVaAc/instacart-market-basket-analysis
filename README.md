@@ -37,17 +37,12 @@ Se implementó un protocolo de limpieza robusto para manejar anomalías del mund
 El análisis reveló una bimodalidad en la retención:
 * Los usuarios tienden a comprar en bloques de **7**, sugiriendo hábitos de reabastecimiento semanal.
 * **Insight:** Las campañas de *re-engagement* deberían activarse preventivamente en el **día 6** para capitalizar la inercia del hábito semanal.
-<p align="center">
-  <img src="images/nombre_imagen.png" width="800">
-</p>
+
 
 ### 3. 🎯 Segmentación por Deciles (Pareto Analysis) 
 Utilizando un enfoque de deciles de volumen, se descubrió:
 * **Decil 1 (Productos):** 18 productos estrella ($0.04\%$ del catálogo) son los responsables del primer $10\%$ de ingresos.
 * **Decil 1 (Clientes):** Solo 2,209 usuarios ($1.48\%$ de la base) generan el $10\%$ del volumen, con una tasa de recompra del **$77.3\%$**.
-<p align="center">
-  <img src="images/nombre_imagen.png" width="800">
-</p>
 
 ---
 
