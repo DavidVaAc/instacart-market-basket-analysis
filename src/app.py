@@ -3,6 +3,7 @@ import pandas as pd
 import plotly.express as px
 from matplotlib import pyplot as plt
 import seaborn as sns
+import os
 plt.style.use('dark_background')
 
 # Configuración de la página
@@ -16,20 +17,25 @@ Esta aplicación interactiva presenta los hallazgos clave del análisis de compo
 """)
 
 # Función para cargar datos (Usa @st.cache_data para que sea rápido)
+BASE_DIR = os.path.dirname(os.path.abspath(__file__))
+
 @st.cache_data
 def load_data():
     # Asegúrate de que las rutas coincidan con tu estructura
-    orders = pd.read_csv('/data/instacart_orders.csv', sep=';')
+    path = os.path.join(BASE_DIR, '..', 'data', 'instacart_orders.csv')
+    orders = pd.read_csv(path, sep=';')
     return orders
 
 def load_order_prod():
     # Asegúrate de que las rutas coincidan con tu estructura
-    order_prods = pd.read_csv('/data/order_products.csv', sep=';')
+    path = os.path.join(BASE_DIR, '..', 'data', 'order_products.csv')
+    order_prods = pd.read_csv(path, sep=';')
     return order_prods
 
 def load_products():
     # Asegúrate de que las rutas coincidan con tu estructura
-    products = pd.read_csv('/data/products.csv', sep=';')
+    path = os.path.join(BASE_DIR, '..', 'data', 'products.csv')
+    products = pd.read_csv(path, sep=';')
     return products
 
 try:
