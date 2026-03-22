@@ -31,6 +31,10 @@ st.info("""### 📊 Resumen Ejecutivo: Consumer Insights & Market Basket Analysi
     3. 🌿 **La Ventaja Orgánica:** El segmento orgánico domina el Top 20 de ventas y presenta una tasa de recompra significativamente superior al promedio. El consumidor valora la salud y la frescura por sobre el precio.
 
     4. ⏰ **Ciclos de Fidelidad Siete-Días:** El hábito de consumo es rítmico. El pico de pedidos ocurre en domingo/lunes y el tiempo de retorno más frecuente es de exactamente 7 días, lo que facilita la predicción de demanda y stock.
+    
+    5. 💎 **Usuarios VIP de Alto Valor:** Menos del 2% de los usuarios mueven el 10% de las transacciones. Estos clientes tienen una lealtad del 77%, lo que indica que su canasta básica está casi totalmente automatizada.
+
+    6. 📥 **Intencionalidad "First-to-Cart":** Las bananas y los lácteos son los disparadores de la compra (lo primero que se añade al carrito). Son los productos "gancho" que inician el flujo de ingresos en cada sesión.
         """)
 
 # Función para cargar datos (Usa @st.cache_data para que sea rápido)
