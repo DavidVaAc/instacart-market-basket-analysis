@@ -148,7 +148,7 @@ try:
             fig_hours.update_yaxes(showgrid=True, gridcolor='rgba(255,255,255,0.1)')
 
             # 5. Desplegar en Streamlit
-            st.plotly_chart(fig_hours)
+            st.plotly_chart(fig_hours, use_container_width=True)
 
             st.info(""" Tras modelar el volumen de transacciones por hora, se identifica un comportamiento bimodal con una clara dominancia en el horario diurno. Los hallazgos principales son:
 
