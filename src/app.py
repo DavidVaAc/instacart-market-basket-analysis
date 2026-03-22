@@ -70,7 +70,7 @@ try:
     st.sidebar.markdown("---")
     st.sidebar.write("Selecciona el Rango de Horario:")
 
-# Slider de rango para las 24 horas
+    # Slider de rango para las 24 horas
     hora_inicio, hora_fin = st.sidebar.slider(
         "Rango de horas (00:00 - 23:00):",
         min_value=0,
@@ -84,209 +84,253 @@ try:
         (df_filtered['order_hour_of_day'] <= hora_fin)
     ]
 
+    st.sidebar.markdown("---")
+    with st.sidebar.expander("🔬 Nota Metodológica"):
+        st.write("""
+    **Enfoque Estadístico:**
+    Este dashboard utiliza **análisis de densidad acumulada** para identificar el comportamiento asintótico del catálogo.
+         
+    * **Análisis de Densidad:** Identificación de comportamientos asintóticos en el catálogo de productos.    
+    * **Segmentación de Fase:** Clasificación de lealtad basada en tasas de reincidencia por deciles de volumen.
+    * **Efecto Pareto:** Modelado mediante distribuciones de frecuencia de pedidos.
+    * **Dinámica Temporal:** Análisis de periodicidad en ciclos de reabastecimiento (7 días).
+    * **Desarrollador:** David Valle Acosta (Físico, UNAM).
+    """)
+
 
     st.divider()
-
+    
     # --- ROW 2: Visualizaciones Temporales ---
-    st.header("⏰ Dinámicas Temporales")
+    if not df_filtered.empty:
 
-    st.space()
+        st.header("⏰ Dinámicas Temporales")
 
-    # --- ROW 1: Métricas de Alto Nivel ---
-    col1, col2, col3 = st.columns(3)
-    col1.metric("Total de Órdenes", f"{len(df_filtered):,}")
-    col2.metric("Promedio Hora de Compra", f"{df_filtered['order_hour_of_day'].mean():.1f} hrs")
-    col3.metric("Día Pico", f"{df_filtered['order_dow'].mode()[0]}")
+        st.space()
 
-    c1, c2 = st.columns(2)
+        # --- ROW 1: Métricas de Alto Nivel ---
+        col1, col2, col3 = st.columns(3)
+        col1.metric("Total de Órdenes", f"{len(df_filtered):,}")
+        col2.metric("Promedio Hora de Compra", f"{df_filtered['order_hour_of_day'].mean():.1f} hrs")
+        col3.metric("Día Pico", f"{df_filtered['order_dow'].mode()[0]}")
 
-    with c1:
-        # 1. Preparación de datos
-        oders_by_hour = df_filtered.groupby('order_hour_of_day').size().reset_index(name='volumen')
+        c1, c2 = st.columns(2)
 
-        # 2. Extraer la paleta 'winter' de Seaborn para que Plotly la reconozca
-        # Usamos 24 colores para representar las 24 horas del día
-        winter_palette = sns.color_palette("winter", 24).as_hex()
+        with c1:
+            # 1. Preparación de datos
+            oders_by_hour = df_filtered.groupby('order_hour_of_day').size().reset_index(name='volumen')
 
-        # 3. Crear la gráfica con Plotly Express
-        fig_hours = px.bar(
-            oders_by_hour, 
-            x='order_hour_of_day', 
-            y='volumen',
-            color='volumen', # El color depende del volumen para el degradado
-            color_continuous_scale=winter_palette,
-            labels={'order_hour_of_day': 'Hora del día',
-                    'volumen': 'Volumen de pedidos'},
-            title='Distribución de pedidos por hora del día'.title()
-        )
+            # 2. Extraer la paleta 'winter' de Seaborn para que Plotly la reconozca
+            # Usamos 24 colores para representar las 24 horas del día
+            winter_palette = sns.color_palette("winter", 24).as_hex()
 
-# 4. Ajustes estéticos para que se vea "Pro" y combine con el modo oscuro
-        fig_hours.update_layout(plot_bgcolor='rgba(0,0,0,0)',
-                                paper_bgcolor='rgba(0,0,0,0)',
-                                font_color="white",
-                                showlegend=False,
-                                coloraxis_showscale=False, # Ocultamos la barra de escala de color lateral
-                                margin=dict(t=50, b=50, l=50, r=50)
-                                )
-
-        fig_hours.update_xaxes(showgrid=False, tickmode='linear')
-        fig_hours.update_yaxes(showgrid=True, gridcolor='rgba(255,255,255,0.1)')
-
-        # 5. Desplegar en Streamlit
-        st.plotly_chart(fig_hours)
-
-        st.info("**⏰ Estrategia Horaria:** El 65% de la carga ocurre entre las 10am y 4pm. Optimizar el personal en esta ventana es clave para la eficiencia operativa.")
-
-    with c2:
-        # 1. Preparación de los datos (manteniendo tu lógica de nombres de días)
-        bar_insta_orders = df_filtered.groupby('order_dow').size().reset_index(name='volumen')
-        nombres_dias = ['Domingo', 'Lunes', 'Martes', 'Miércoles', 'Jueves', 'Viernes', 'Sábado']
-
-        # 2. Extraer la paleta 'cool' de Seaborn para Plotly
-        # Usamos 7 colores, uno para cada día de la semana
-        cool_palette = sns.color_palette("cool", 7).as_hex()
-
-        # 3. Crear la gráfica con Plotly Express
-        fig_dow = px.bar(
-            bar_insta_orders,
-             x='order_dow',
-            y='volumen',
-            color='volumen', # Aplicamos el degradado según el volumen
-            color_continuous_scale=cool_palette,
-            labels={
-                'order_dow': 'Día de la semana',
-                'volumen': 'Volumen de pedidos'
-                    },
-             title='Distribución de pedidos por día de la semana'.title()
+            # 3. Crear la gráfica con Plotly Express
+            fig_hours = px.bar(
+                oders_by_hour, 
+                x='order_hour_of_day', 
+                y='volumen',
+                color='volumen', # El color depende del volumen para el degradado
+                color_continuous_scale=winter_palette,
+                labels={'order_hour_of_day': 'Hora del día',
+                        'volumen': 'Volumen de pedidos'},
+                title='Distribución de pedidos por hora del día'.title()
             )
 
-        # 4. Ajustes estéticos para modo oscuro y diseño limpio
-        fig_dow.update_layout(
+            # 4. Ajustes estéticos para que se vea "Pro" y combine con el modo oscuro
+            fig_hours.update_layout(plot_bgcolor='rgba(0,0,0,0)',
+                                    paper_bgcolor='rgba(0,0,0,0)',
+                                    font_color="white",
+                                    showlegend=False,
+                                    coloraxis_showscale=False, # Ocultamos la barra de escala de color lateral
+                                    margin=dict(t=50, b=50, l=50, r=50)
+                                    )
+
+            fig_hours.update_xaxes(showgrid=False, tickmode='linear')
+            fig_hours.update_yaxes(showgrid=True, gridcolor='rgba(255,255,255,0.1)')
+
+            # 5. Desplegar en Streamlit
+            st.plotly_chart(fig_hours)
+
+            st.info(""" Tras modelar el volumen de transacciones por hora, se identifica un comportamiento bimodal con una clara dominancia en el horario diurno. Los hallazgos principales son:
+
+* ⚡ Meseta de Máxima Demanda (Picos Operativos): Se observa una ventana de alta intensidad entre las 09:00 y las 16:00 horas, con un volumen sostenido superior a los 35,000 pedidos. El pico máximo absoluto ocurre a las 10:00 AM, consolidándose como la hora crítica para la logística y disponibilidad de la plataforma.
+
+* 🌅 Fase de Aceleración Matutina: A partir de las 07:00 AM, el sistema experimenta un incremento exponencial en la tasa de pedidos, marcando el inicio de la jornada operativa principal y sugiriendo un hábito de compra ligado al inicio de las actividades diarias de los usuarios.
+
+* 📉 Desaceleración y Comportamiento Nocturno: Se detecta un descenso progresivo después de las 17:00 horas. La actividad durante la madrugada (00:00 - 06:00) es estadísticamente marginal, confirmando que el servicio tiene un uso casi exclusivamente diurno.
+
+💡 Insight Estratégico: La concentración del 70% de la carga operativa en un bloque de 7 horas sugiere la necesidad de optimizar la asignación de repartidores y el soporte técnico durante este intervalo para mitigar posibles cuellos de botella.
+            """)
+
+        with c2:
+            # 1. Preparación de los datos (manteniendo tu lógica de nombres de días)
+            bar_insta_orders = df_filtered.groupby('order_dow').size().reset_index(name='volumen')
+            nombres_dias = ['Domingo', 'Lunes', 'Martes', 'Miércoles', 'Jueves', 'Viernes', 'Sábado']
+
+            # 2. Extraer la paleta 'cool' de Seaborn para Plotly
+            # Usamos 7 colores, uno para cada día de la semana
+            cool_palette = sns.color_palette("cool", 7).as_hex()
+
+            # 3. Crear la gráfica con Plotly Express
+            fig_dow = px.bar(
+                bar_insta_orders,
+                x='order_dow',
+                y='volumen',
+                color='volumen', # Aplicamos el degradado según el volumen
+                color_continuous_scale=cool_palette,
+                labels={
+                    'order_dow': 'Día de la semana',
+                    'volumen': 'Volumen de pedidos'
+                        },
+                title='Distribución de pedidos por día de la semana'.title()
+                )
+
+            # 4. Ajustes estéticos para modo oscuro y diseño limpio
+            fig_dow.update_layout(
+                plot_bgcolor='rgba(0,0,0,0)',
+                paper_bgcolor='rgba(0,0,0,0)',
+                font_color="white",
+                coloraxis_showscale=False, # Ocultamos la barra de color lateral
+                showlegend=False,
+                margin=dict(t=50, b=50, l=50, r=50)
+            )
+
+            # Aseguramos que los días aparezcan en el orden correcto (de Domingo a Sábado)
+            fig_dow.update_xaxes(
+                categoryorder='array', 
+                categoryarray=nombres_dias,
+                showgrid=False
+            )
+
+            fig_dow.update_yaxes(
+                showgrid=True, 
+                gridcolor='rgba(255,255,255,0.1)'
+                )
+
+            # 5. Desplegar en Streamlit
+            st.plotly_chart(fig_dow, use_container_width=True)    
+
+            st.info("""El análisis de volumen por día de la semana (**order_dow**) revela una concentración de demanda muy marcada en el inicio del ciclo semanal. Los hallazgos principales son:
+
+* 🚀 **Pico de Alta Demanda (Fase de Reabastecimiento)**: El **domingo (84,090 órdenes)** y el **lunes (82,185 órdenes)** se consolidan como los días de mayor actividad transaccional. Este comportamiento sugiere que el usuario promedio de Instacart utiliza la plataforma como su herramienta principal para la planificación y compra de la despensa semanal.
+
+* 📉 **Fase de Estabilización (Valle Semanal)**: A partir del martes, se observa una contracción en el volumen de pedidos, alcanzando su punto mínimo el **jueves (59,810 órdenes)**. Este descenso representa una caída del **28.8%** respecto al pico del domingo, marcando la ventana de menor presión operativa para la logística de entrega.
+
+* 📈 **Recuperación de Fin de Semana**: Se detecta un repunte moderado a partir del viernes y sábado, estabilizándose por encima de las 62,000 órdenes. Esto indica una transición hacia compras de conveniencia o preparación para el fin de semana antes del gran ciclo de reabastecimiento del domingo.
+
+💡 **Insight de Negocio**: La disparidad de volumen entre el domingo y el jueves sugiere una oportunidad para implementar estrategias de **"Dynamic Pricing"** o promociones exclusivas en días de baja demanda (miércoles/jueves) para balancear la carga operativa de los repartidores a lo largo de la semana.
+            """)
+    
+        # --- ROW 3: El Hallazgo de Pareto ---
+        # 1. Preparación de los datos (agrupando por días desde la compra previa)
+        # Asegúrate de usar el DataFrame filtrado si aplica, o el original
+        bar_2_data = df_filtered.groupby('days_since_prior_order').size().reset_index(name='volumen')
+        bar_2_data['days_since_prior_order'] = bar_2_data['days_since_prior_order'].astype('int')
+
+        # 2. Crear la gráfica con Plotly Express
+        fig_reorder = px.bar(
+            bar_2_data,
+            x='days_since_prior_order',
+            y='volumen',
+            color='volumen', # El degradado depende del volumen de pedidos
+            color_continuous_scale='Viridis', # Plotly reconoce 'Viridis' directamente
+            labels={
+            'days_since_prior_order': 'Días desde la compra previa',
+                'volumen': 'Volumen de pedidos'
+            },
+            title='Distribución de pedidos según días desde la compra previa'.title()
+        )
+
+        # 3. Ajustes estéticos para modo oscuro y diseño limpio
+        fig_reorder.update_layout(
             plot_bgcolor='rgba(0,0,0,0)',
             paper_bgcolor='rgba(0,0,0,0)',
             font_color="white",
-            coloraxis_showscale=False, # Ocultamos la barra de color lateral
+            coloraxis_showscale=False, # Ocultamos la barra de escala lateral para limpieza
             showlegend=False,
             margin=dict(t=50, b=50, l=50, r=50)
         )
 
-        # Aseguramos que los días aparezcan en el orden correcto (de Domingo a Sábado)
-        fig_dow.update_xaxes(
-            categoryorder='array', 
-            categoryarray=nombres_dias,
-            showgrid=False
+        # 4. Configuración detallada de los ejes
+        fig_reorder.update_xaxes(
+            showgrid=False,
+            tickmode='linear', # Mostramos todos los números del 0 al 30
+            dtick=1 # Forzamos que aparezca cada día (0, 1, 2, 3...)
         )
 
-        fig_dow.update_yaxes(
-            showgrid=True, 
+        fig_reorder.update_yaxes(
+            showgrid=True,
             gridcolor='rgba(255,255,255,0.1)'
-            )
+        )
 
         # 5. Desplegar en Streamlit
-        st.plotly_chart(fig_dow, use_container_width=True)    
 
-        st.info("**📅 Estrategia Semanal:** El pico de Domingo/Lunes valida el hábito de 'despensa semanal'. Las promociones de retención son más efectivas los fines de semana.")
-    
-    # --- ROW 3: El Hallazgo de Pareto ---
-    # 1. Preparación de los datos (agrupando por días desde la compra previa)
-    # Asegúrate de usar el DataFrame filtrado si aplica, o el original
-    bar_2_data = df_filtered.groupby('days_since_prior_order').size().reset_index(name='volumen')
-    bar_2_data['days_since_prior_order'] = bar_2_data['days_since_prior_order'].astype('int')
+        st.space()
 
-    # 2. Crear la gráfica con Plotly Express
-    fig_reorder = px.bar(
-        bar_2_data,
-        x='days_since_prior_order',
-        y='volumen',
-        color='volumen', # El degradado depende del volumen de pedidos
-        color_continuous_scale='Viridis', # Plotly reconoce 'Viridis' directamente
-        labels={
-           'days_since_prior_order': 'Días desde la compra previa',
-            'volumen': 'Volumen de pedidos'
-        },
-        title='Distribución de pedidos según días desde la compra previa'.title()
-    )
+        st.plotly_chart(fig_reorder, use_container_width=True)
 
-    # 3. Ajustes estéticos para modo oscuro y diseño limpio
-    fig_reorder.update_layout(
-        plot_bgcolor='rgba(0,0,0,0)',
-        paper_bgcolor='rgba(0,0,0,0)',
-        font_color="white",
-        coloraxis_showscale=False, # Ocultamos la barra de escala lateral para limpieza
-        showlegend=False,
-        margin=dict(t=50, b=50, l=50, r=50)
-    )
+        st.info("""El estudio de la variable days_since_prior_order permite cuantificar la lealtad y los hábitos de consumo cíclicos de la base de usuarios. Los hallazgos demuestran una estructura de comportamiento altamente predecible:
 
-    # 4. Configuración detallada de los ejes
-    fig_reorder.update_xaxes(
-        showgrid=False,
-        tickmode='linear', # Mostramos todos los números del 0 al 30
-        dtick=1 # Forzamos que aparezca cada día (0, 1, 2, 3...)
-    )
+* 📅 El Ciclo Semanal (Pico de los 7 días): Se observa un pico dominante a los 7 días, lo que confirma que el hábito de consumo más fuerte es el reabastecimiento semanal. La mediana ($50\%$) coincide exactamente con este valor, indicando que la mitad de los usuarios recurrentes regresan antes de una semana.
 
-    fig_reorder.update_yaxes(
-        showgrid=True,
-        gridcolor='rgba(255,255,255,0.1)'
-    )
+* 📈 Picos Secundarios y Periodicidad: Existe una clara presencia de picos menores a los 14 y 21 días. Estos "ecos" estadísticos sugieren segmentos de usuarios con ciclos de compra quincenales o dependientes de periodos de pago.
 
-    # 5. Desplegar en Streamlit
+* 🚩 Análisis del Límite Operativo (Día 30): El volumen máximo absoluto se concentra en el día 30. No obstante, este valor debe interpretarse con cautela: estadísticamente representa un punto de acumulación (censura a la derecha). Es altamente probable que el sistema de Instacart agrupe a todos los usuarios con más de 30 días de inactividad en esta categoría, funcionando como un indicador de usuarios en riesgo de fuga (churn).
 
-    st.space()
+* 📉 Valores Mínimos y Frecuencia: La presencia de pedidos en el día 0 indica compras inmediatas de conveniencia o correcciones de órdenes previas, aunque representan una fracción mínima de la población.
 
-    st.plotly_chart(fig_reorder, use_container_width=True)
+💡 Insight de Fidelización: Los usuarios que superan el umbral de los 7-10 días sin recompra entran en una zona de "enfriamiento". Las campañas de re-engagement deberían activarse preventivamente en el día 6 para capitalizar la inercia del hábito semanal detectado.
+        """)
 
-    st.info(" 💡 **Insight de Negocio:** El pico en el día 7 revela ciclos de lealtad semanal.")
+        st.divider()
 
-    st.divider()
+        st.header("📊 El Factor de Retención")    
 
-    st.header("📊 El Factor de Retención")    
+        # 1. Preparación de los datos (Top 20 Reordenados)
+        df_order_prod = load_order_prod().merge(df_filtered[['order_id','order_dow','order_hour_of_day']], on='order_id', how='inner') 
+        df_products = load_products()
+        # Filtramos por reordered == 1, agrupamos y traemos los nombres
+        top_reord_data = df_order_prod[df_order_prod['reordered'] == 1].groupby('product_id').size().reset_index(name='orders')
+        top_reord_data = top_reord_data.sort_values(by='orders', ascending=False).head(20)
 
-    # 1. Preparación de los datos (Top 20 Reordenados)
-    df_order_prod = load_order_prod().merge(df_filtered[['order_id','order_dow','order_hour_of_day']], on='order_id', how='inner') 
-    df_products = load_products()
-    # Filtramos por reordered == 1, agrupamos y traemos los nombres
-    top_reord_data = df_order_prod[df_order_prod['reordered'] == 1].groupby('product_id').size().reset_index(name='orders')
-    top_reord_data = top_reord_data.sort_values(by='orders', ascending=False).head(20)
+        # Unimos con la tabla de productos para obtener los nombres
+        top_reord_data = top_reord_data.merge(df_products[['product_id', 'product_name']], on='product_id', how='left')
 
-    # Unimos con la tabla de productos para obtener los nombres
-    top_reord_data = top_reord_data.merge(df_products[['product_id', 'product_name']], on='product_id', how='left')
+        # 2. Crear la gráfica horizontal con Plotly Express
+        fig_top_reord = px.bar(
+            top_reord_data,
+            x='orders',
+            y='product_name',
+            orientation='h', # Gráfica horizontal
+            color='orders',
+            color_continuous_scale=cool_palette,
+            labels={
+                'orders': 'Volumen de Recompras',
+                'product_name': 'Producto'
+            },
+            title='Top 20 Productos Reincidentes con mas ventas'.title()
+            )
 
-    # 2. Crear la gráfica horizontal con Plotly Express
-    fig_top_reord = px.bar(
-        top_reord_data,
-      x='orders',
-      y='product_name',
-       orientation='h', # Gráfica horizontal
-      color='orders',
-      color_continuous_scale=cool_palette,
-       labels={
-          'orders': 'Volumen de Recompras',
-          'product_name': 'Producto'
-       },
-       title='Top 20 Productos Reincidentes con mas ventas'.title()
-    )
+        # 3. Ajustes estéticos (Modo Oscuro y Limpieza)
+        fig_top_reord.update_layout(
+            plot_bgcolor='rgba(0,0,0,0)',
+            paper_bgcolor='rgba(0,0,0,0)',
+            font_color="white",
+            coloraxis_showscale=False,
+            showlegend=False,
+            yaxis={'categoryorder':'total ascending'}, # Asegura que el más vendido esté arriba
+            margin=dict(t=50, b=50, l=50, r=50),
+            height=600 # Un poco más de altura para que los nombres respiren
+        )
 
-    # 3. Ajustes estéticos (Modo Oscuro y Limpieza)
-    fig_top_reord.update_layout(
-       plot_bgcolor='rgba(0,0,0,0)',
-      paper_bgcolor='rgba(0,0,0,0)',
-       font_color="white",
-       coloraxis_showscale=False,
-       showlegend=False,
-      yaxis={'categoryorder':'total ascending'}, # Asegura que el más vendido esté arriba
-      margin=dict(t=50, b=50, l=50, r=50),
-      height=600 # Un poco más de altura para que los nombres respiren
-    )
+        fig_top_reord.update_xaxes(showgrid=True, gridcolor='rgba(255,255,255,0.1)')
+        fig_top_reord.update_yaxes(showgrid=False)
 
-    fig_top_reord.update_xaxes(showgrid=True, gridcolor='rgba(255,255,255,0.1)')
-    fig_top_reord.update_yaxes(showgrid=False)
+        # 4. Desplegar en Streamlit con su Insight de Negocio
+        c1, c2 = st.columns(2)
+        with c1:
+            st.plotly_chart(fig_top_reord, use_container_width=True)
 
-    # 4. Desplegar en Streamlit con su Insight de Negocio
-    c1, c2 = st.columns(2)
-    with c1:
-        st.plotly_chart(fig_top_reord, use_container_width=True)
-
-        st.info("""
+            st.info("""
  * 👑 **Los "Indispensables" del Inventario**: Nuevamente, la **Banana** y la **Bag of Organic Bananas** lideran el ranking. Su altísima tasa de reincidencia confirma que son productos de consumo diario y vida útil corta, lo que obliga al usuario a reponerlos en casi cada ciclo de compra (cada 7 días, como vimos en el análisis de recurrencia).
 
 * 🧬 **Consistencia en el Perfil Orgánico**: Existe una correlación casi total entre el volumen de ventas y la reincidencia. Los productos orgánicos (fresas, espinacas, aguacates) no solo son los más comprados, sino los que presentan mayor fidelidad. Esto sugiere que el consumidor de productos orgánicos en Instacart es un **perfil de cliente recurrente**, no ocasional.
@@ -297,73 +341,73 @@ try:
 
 💡 **Insight de Retención**: Los productos en esta lista son los "anclas" de la aplicación. Si un cliente encuentra su marca favorita de leche o la calidad de sus bananas siempre disponible, la probabilidad de que realice su próximo pedido (el salto crítico de la compra 1 a la 2 que analizamos antes) aumenta exponencialmente. """)
 
-    # Agrupamos por 'product_id' y contamos la cantidad de 'order_id' para cada producto,
-    # pero esta vez lo hacemos para los productos reordenados y no reordenados.
-    reordered_vs_non = pd.pivot_table(df_order_prod, index=['product_id'], columns=['reordered'], values='order_id', aggfunc='count')
+        # Agrupamos por 'product_id' y contamos la cantidad de 'order_id' para cada producto,
+        # pero esta vez lo hacemos para los productos reordenados y no reordenados.
+        reordered_vs_non = pd.pivot_table(df_order_prod, index=['product_id'], columns=['reordered'], values='order_id', aggfunc='count')
 
-    # Rellenamos los valores ausentes con 0, 
-    # ya que si no hay un valor para un producto en la columna de reordenados o no reordenados, 
-    # significa que ese producto no tiene pedidos en esa categoría.
-    reordered_vs_non.fillna(0, inplace=True)
+        # Rellenamos los valores ausentes con 0, 
+        # ya que si no hay un valor para un producto en la columna de reordenados o no reordenados, 
+        # significa que ese producto no tiene pedidos en esa categoría.
+        reordered_vs_non.fillna(0, inplace=True)
 
-    # Calculamos el total de pedidos para cada producto sumando los pedidos reordenados y no reordenados.
-    reordered_vs_non['total'] = (reordered_vs_non[0] + reordered_vs_non[1])
+        # Calculamos el total de pedidos para cada producto sumando los pedidos reordenados y no reordenados.
+        reordered_vs_non['total'] = (reordered_vs_non[0] + reordered_vs_non[1])
 
-    # Calculamos la razón de recompra dividiendo los pedidos reordenados entre el total de pedidos para cada producto.
-    reordered_vs_non['razon_recompra'] = reordered_vs_non[1]/reordered_vs_non['total']
-    reordered_vs_non.reset_index(inplace=True)
+        # Calculamos la razón de recompra dividiendo los pedidos reordenados entre el total de pedidos para cada producto.
+        reordered_vs_non['razon_recompra'] = reordered_vs_non[1]/reordered_vs_non['total']
+        reordered_vs_non.reset_index(inplace=True)
 
-    # Realizamos un merge entre el DataFrame de pedidos reordenados y no reordenados y el DataFrame de productos para obtener los nombres de los productos.
-    reordered_vs_non = pd.merge(reordered_vs_non, df_products[['product_id', 'product_name']], how='left', on='product_id')
-    reordered_vs_non.sort_values(['total', 'razon_recompra'], ascending=False, inplace=True)
-    reordered_vs_non.reset_index(inplace=True, drop=True)
+        # Realizamos un merge entre el DataFrame de pedidos reordenados y no reordenados y el DataFrame de productos para obtener los nombres de los productos.
+        reordered_vs_non = pd.merge(reordered_vs_non, df_products[['product_id', 'product_name']], how='left', on='product_id')
+        reordered_vs_non.sort_values(['total', 'razon_recompra'], ascending=False, inplace=True)
+        reordered_vs_non.reset_index(inplace=True, drop=True)
 
-    # Creamos una nueva columna llamada 'top' que clasifica los productos en 10 grupos, cada grupo representa un decil de la contribución acumulada al total de pedidos.
-    n_divisones = 10
-    reordered_vs_non['top'] = ((reordered_vs_non['total'].cumsum()/reordered_vs_non['total'].sum())*n_divisones+1).astype('int').clip(1, n_divisones)
-    reordered_vs_non = reordered_vs_non.iloc[:,[0, 6, 5, 1, 2, 3, 4]]
+        # Creamos una nueva columna llamada 'top' que clasifica los productos en 10 grupos, cada grupo representa un decil de la contribución acumulada al total de pedidos.
+        n_divisones = 10
+        reordered_vs_non['top'] = ((reordered_vs_non['total'].cumsum()/reordered_vs_non['total'].sum())*n_divisones+1).astype('int').clip(1, n_divisones)
+        reordered_vs_non = reordered_vs_non.iloc[:,[0, 6, 5, 1, 2, 3, 4]]
 
-    # Creamos un DataFrame que muestra la cantidad de productos en cada grupo de 'top'
-    rank_reordered_vs_non = pd.DataFrame(reordered_vs_non['top'].value_counts(ascending=True))
+        # Creamos un DataFrame que muestra la cantidad de productos en cada grupo de 'top'
+        rank_reordered_vs_non = pd.DataFrame(reordered_vs_non['top'].value_counts(ascending=True))
 
-    # Calculamos la razón de recompra para cada grupo de 'top' dividiendo la suma de pedidos reordenados entre la suma del total de pedidos para cada grupo.
-    razon_recompra =[]
-    for rank in range(1,n_divisones+1):
-      razon_recompra.append(reordered_vs_non[reordered_vs_non['top'] == rank][1].sum()/reordered_vs_non[reordered_vs_non['top'] == rank]['total'].sum())
-    rank_reordered_vs_non['razon_recompra'] = razon_recompra
+        # Calculamos la razón de recompra para cada grupo de 'top' dividiendo la suma de pedidos reordenados entre la suma del total de pedidos para cada grupo.
+        razon_recompra =[]
+        for rank in range(1,n_divisones+1):
+            razon_recompra.append(reordered_vs_non[reordered_vs_non['top'] == rank][1].sum()/reordered_vs_non[reordered_vs_non['top'] == rank]['total'].sum())
+        rank_reordered_vs_non['razon_recompra'] = razon_recompra
 
         # 2. Crear la gráfica horizontal con Plotly Express
-    fig_rank_reordered_vs_non = px.bar(
-        rank_reordered_vs_non,
-      x='count',
-      y='razon_recompra',
-      color='razon_recompra',
-      color_continuous_scale=winter_palette,
-       labels={
-          'count': 'Cantidad de productos por decil',
-          'razon_recompra': 'Razón de recompra'
-       },
-       title='Razón de Recompra por Decil'.title()
-    )
+        fig_rank_reordered_vs_non = px.bar(
+            rank_reordered_vs_non,
+            x='count',
+            y='razon_recompra',
+            color='razon_recompra',
+            color_continuous_scale=winter_palette,
+            labels={
+                'count': 'Cantidad de productos por decil',
+                'razon_recompra': 'Razón de recompra'
+            },
+            title='Razón de Recompra por Decil'.title()
+            )
 
-    # 3. Ajustes estéticos (Modo Oscuro y Limpieza)
-    fig_rank_reordered_vs_non.update_layout(
-       plot_bgcolor='rgba(0,0,0,0)',
-      paper_bgcolor='rgba(0,0,0,0)',
-       font_color="white",
-       coloraxis_showscale=False,
-       showlegend=False,
-      margin=dict(t=50, b=50, l=50, r=50),
-      height=600 # Un poco más de altura para que los nombres respiren
-    )
+        # 3. Ajustes estéticos (Modo Oscuro y Limpieza)
+        fig_rank_reordered_vs_non.update_layout(
+            plot_bgcolor='rgba(0,0,0,0)',
+            paper_bgcolor='rgba(0,0,0,0)',
+            font_color="white",
+            coloraxis_showscale=False,
+            showlegend=False,
+            margin=dict(t=50, b=50, l=50, r=50),
+            height=600 # Un poco más de altura para que los nombres respiren
+            )
 
-    fig_rank_reordered_vs_non.update_xaxes(showgrid=True, gridcolor='rgba(255,255,255,0.1)', type='category')
-    fig_rank_reordered_vs_non.update_yaxes(showgrid=False)
+        fig_rank_reordered_vs_non.update_xaxes(showgrid=True, gridcolor='rgba(255,255,255,0.1)', type='category')
+        fig_rank_reordered_vs_non.update_yaxes(showgrid=False)
 
-    with c2:
-        st.plotly_chart(fig_rank_reordered_vs_non, use_container_width=True)
+        with c2:
+            st.plotly_chart(fig_rank_reordered_vs_non, use_container_width=True)
 
-        st.info("""
+            st.info("""
 Para entender la estructura del catálogo, se implementó una segmentación por deciles basada en el volumen de transacciones. Cada segmento representa exactamente el **10% del volumen total de ventas**, permitiendo contrastar la popularidad contra la lealtad (recompra).
 
 1. 🎯 **Concentración Extrema de la Demanda (Efecto Pareto)**
@@ -389,7 +433,29 @@ Para entender la estructura del catálogo, se implementó una segmentación por 
 💡 **Insight Estratégico**: El negocio posee un núcleo de "Ultra-Alta Rotación" extremadamente fiel. Mientras que el $80\%$ del catálogo (la Long Tail) ofrece variedad, el éxito operativo y la retención del usuario dependen casi exclusivamente del $2\%$ de los productos. Cualquier interrupción en la cadena de suministro de este núcleo tendría un impacto sistémico inmediato.
                 """)
       
-
+    else:
+        # Mensaje amigable si el usuario filtra demasiado
+        st.warning("⚠️ No se encontraron pedidos para la combinación de filtros seleccionada.")
+        st.info("💡 Sugerencia: Intenta seleccionar más días de la semana o ampliar el rango de horas en el sidebar.")
         
 except FileNotFoundError:
     st.error("⚠️ No se encontraron los archivos de datos en la carpeta `data/`. Verifica las rutas.")
+
+# --- Sección Final de Contacto ---
+st.markdown("---") # Una línea divisoria clara
+
+
+st.markdown("""
+### 📧 Contacto y Colaboración
+Si te interesa profundizar en los modelos matemáticos de este análisis o discutir oportunidades en **Data Science**, no dudes en contactarme.
+"""
+)
+cols = st.columns(4)
+# Sustituye con tus links reales
+cols[0].write("💼 [Portafolio](https://davidvaac.github.io/DavidVaAc/)")
+cols[1].write("🔗 [LinkedIn](https://www.linkedin.com/in/david-fernando-valle-acosta-b18268265/)")
+cols[2].write("📁 [GitHub](https://github.com/DavidVaAc)")
+cols[3].write("✉️ [Email](mailto:davidfervalle@gmail.com)")
+
+# Un pie de página discreto
+st.caption("© 2026 | Desarrollado por David Valle Acosta - Físico, UNAM")
