@@ -72,7 +72,7 @@ Utilizando un enfoque de deciles de volumen, se descubrió:
 ## 📁 Estructura del Repositorio
 * `src/`: Código fuente para el dashboard.
 * `data/`: Datasets utilizados en el análisis.
-* `notebooks/`: Contiene el análisis detallado paso a paso (`eda_instacart.ipynb`).
+* `notebooks/`: Contiene el análisis detallado paso a paso (`instacart_eda_analysis.ipynb`).
 * `images/`: Capturas de pantalla de las visualizaciones clave.
 * `README.md`: Documentación del proyecto.
 * `requirements.txt`: Dependencias del proyecto.
