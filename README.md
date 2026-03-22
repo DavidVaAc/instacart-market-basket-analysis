@@ -2,6 +2,8 @@
 
 Este proyecto transforma un dataset masivo de transacciones de **Instacart** en inteligencia de negocio. A través de un Análisis Exploratorio de Datos (EDA) profundo, se identifican patrones de recompra, ventanas críticas de demanda y una segmentación estratégica de productos y clientes.
 
+---
+
 ## 📊 Resumen Ejecutivo: Consumer Insights
 
 * **⚡ El Motor del Catálogo (Efecto Pareto):** Se identificó una concentración extrema donde solo el **1.7% de los productos** genera el **50% del volumen total** de ventas.
@@ -23,6 +25,19 @@ Este proyecto transforma un dataset masivo de transacciones de **Instacart** en 
 <p align="center">
   <img src="images/decil_usrs.png" width="600">
 </p>
+
+---
+
+## 🛠️ Acceso al Proyecto
+
+Explora el proceso técnico detrás de los datos y la herramienta interactiva final:
+
+### 📊 [Dashboard Interactivo (Streamlit)](https://8lyyid3uaf6wn9a3cfxtev.streamlit.app/)
+> **Ideal para:** Una exploración rápida y visual. Permite filtrar por día, hora y ver el comportamiento del catálogo con gráficas de Plotly.
+
+### 📓 [Documentación Técnica (Jupyter Notebook)](https://github.com/DavidVaAc/instacart-market-basket-analysis/blob/main/notebooks/instacart_eda_analysis.ipynb)
+> **Ideal para:** Revisar el rigor científico. Contiene la limpieza de datos, el procesamiento de tipos de variables y la lógica matemática detrás de los deciles de Pareto.
+
 ---
 
 ## 🔬 Metodología y Hallazgos Críticos
@@ -65,4 +80,7 @@ Utilizando un enfoque de deciles de volumen, se descubrió:
 ---
 
 ## ✉️ Contacto
-David Fernando Valle Acosta – [LinkedIn](https://www.linkedin.com/in/david-fernando-valle-acosta-b18268265/) – [davidvalle@gmail.com](mailto:davidvalle@gmail.com)
+* 💼 [Portafolio](https://davidvaac.github.io/DavidVaAc/#)
+* 🌐 [Linkedin](www.linkedin.com/in/david-fernando-valle-acosta-b18268265)
+* 📋 [Curriculum](https://drive.google.com/file/d/1epmNOV5wLOiH2na0B_kiDaaevGUPrUdF/view?usp=sharing)
+* ✉️ [Email](mailto:davidfervalle@gmail.com)
