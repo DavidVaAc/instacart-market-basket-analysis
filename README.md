@@ -64,8 +64,8 @@ Utilizando un enfoque de deciles de volumen, se descubrió:
 ## 🛠️ Tecnologías y Herramientas
 * **Lenguaje:** Python 3.x
 * **Análisis de Datos:** Pandas, NumPy
-* **Visualización:** Seaborn (Paletas Viridis/Rocket), Matplotlib
-* **Entorno:** Jupyter Notebook / VS Code
+* **Visualización:** Seaborn y Plotly (Paletas Viridis/Cool/Winter), Matplotlib
+* **Entorno:** Jupyter Notebook / VS Code / Streamlit
 
 ---
 

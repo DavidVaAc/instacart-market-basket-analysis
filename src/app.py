@@ -57,6 +57,13 @@ def load_products():
     products = pd.read_csv(path, sep=';')
     return products
 
+@st.cache_data
+def load_departments():
+    # Asegúrate de que las rutas coincidan con tu estructura
+    path = os.path.join(BASE_DIR, '..', 'data', 'departments.csv')
+    departments = pd.read_csv(path, sep=';')
+    return departments
+
 try:
     df_orders = load_orders()
     dias_dict = {0: 'Domingo', 1: 'Lunes', 2: 'Martes', 3: 'Miércoles', 4: 'Jueves', 5: 'Viernes', 6: 'Sábado'}
@@ -66,7 +73,7 @@ try:
 
     # 1. Definimos el orden lógico para que los checkboxes no salgan alfabéticos
 
-    st.sidebar.header("📅 Filtros de Análisis")
+    st.sidebar.header("🛠️ Filtros de Análisis")
     st.sidebar.write("Selecciona los días para visualizar:")
 
     # 2. Lista para guardar los días que el usuario marque
@@ -102,6 +109,23 @@ try:
         (df_filtered['order_hour_of_day'] >= hora_inicio) & 
         (df_filtered['order_hour_of_day'] <= hora_fin)
     ]
+    st.sidebar.markdown("---")
+
+    # Filtro de Departamentos
+    df_departments = load_departments()
+    departments = st.sidebar.multiselect("Selecciona los departamentos:", 
+                           options=sorted(df_departments['department'].unique()), 
+                           default=sorted(df_departments['department'].unique())
+                            )
+    df_departments = df_departments[df_departments['department'].isin(departments)]
+
+    # 1. Preparación de los datos (Top 20 Reordenados)
+     
+    df_products = load_products().merge(df_departments[['department_id', 'department']], on='department_id', how='inner')
+    df_order_prod = load_order_prod().merge(df_products[['product_id', 'product_name', 'department']], on='product_id', how='inner')
+
+    df_filtered = df_filtered[df_filtered['order_id'].isin(df_order_prod['order_id'].unique())]
+    df_order_prod = df_order_prod.merge(df_filtered[['order_id','order_dow','order_hour_of_day']], on='order_id', how='inner')
 
     st.sidebar.markdown("---")
     with st.sidebar.expander("🔬 Nota Metodológica"):
@@ -302,13 +326,10 @@ try:
 
         st.divider()
 
-        st.header("📊 El Factor de Retención")    
+        st.header("📈 El Factor de Retención")    
 
         st.space()
 
-        # 1. Preparación de los datos (Top 20 Reordenados)
-        df_order_prod = load_order_prod().merge(df_filtered[['order_id','order_dow','order_hour_of_day']], on='order_id', how='inner') 
-        df_products = load_products()
         # Filtramos por reordered == 1, agrupamos y traemos los nombres
         top_reord_data = df_order_prod[df_order_prod['reordered'] == 1].groupby('product_id').size().reset_index(name='orders')
         top_reord_data = top_reord_data.sort_values(by='orders', ascending=False).head(20)
@@ -379,7 +400,7 @@ try:
         reordered_vs_non.reset_index(inplace=True)
 
         # Realizamos un merge entre el DataFrame de pedidos reordenados y no reordenados y el DataFrame de productos para obtener los nombres de los productos.
-        reordered_vs_non = pd.merge(reordered_vs_non, df_products[['product_id', 'product_name']], how='left', on='product_id')
+        reordered_vs_non = pd.merge(reordered_vs_non, df_products[['product_id', 'product_name']], how='inner', on='product_id')
         reordered_vs_non.sort_values(['total', 'razon_recompra'], ascending=False, inplace=True)
         reordered_vs_non.reset_index(inplace=True, drop=True)
 
