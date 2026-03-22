@@ -387,7 +387,7 @@ try:
                 'count': 'Cantidad de productos por decil',
                 'razon_recompra': 'Razón de recompra'
             },
-            title='Razón de Recompra por Decil'.title()
+            title='Razón de Recompra por Decil de ventas'.title()
             )
 
         # 3. Ajustes estéticos (Modo Oscuro y Limpieza)
@@ -408,7 +408,7 @@ try:
             st.plotly_chart(fig_rank_reordered_vs_non, use_container_width=True)
 
             st.info("""
-Para entender la estructura del catálogo, se implementó una segmentación por deciles basada en el volumen de transacciones. Cada segmento representa exactamente el **10% del volumen total de ventas**, permitiendo contrastar la popularidad contra la lealtad (recompra).
+Para entender la estructura del catálogo, se implementó una segmentación de productos por deciles basada en el volumen de transacciones. Cada segmento representa exactamente el **10% del volumen total de ventas**, permitiendo contrastar la popularidad contra la lealtad (recompra).
 
 1. 🎯 **Concentración Extrema de la Demanda (Efecto Pareto)**
 
