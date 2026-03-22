@@ -20,18 +20,20 @@ Esta aplicación interactiva presenta los hallazgos clave del análisis de compo
 BASE_DIR = os.path.dirname(os.path.abspath(__file__))
 
 @st.cache_data
-def load_data():
+def load_orders():
     # Asegúrate de que las rutas coincidan con tu estructura
     path = os.path.join(BASE_DIR, '..', 'data', 'instacart_orders.csv')
     orders = pd.read_csv(path, sep=';')
     return orders
 
+@st.cache_data
 def load_order_prod():
     # Asegúrate de que las rutas coincidan con tu estructura
     path = os.path.join(BASE_DIR, '..', 'data', 'order_products.csv')
     order_prods = pd.read_csv(path, sep=';')
     return order_prods
 
+@st.cache_data
 def load_products():
     # Asegúrate de que las rutas coincidan con tu estructura
     path = os.path.join(BASE_DIR, '..', 'data', 'products.csv')
@@ -39,7 +41,7 @@ def load_products():
     return products
 
 try:
-    df_orders = load_data()
+    df_orders = load_orders()
     dias_dict = {0: 'Domingo', 1: 'Lunes', 2: 'Martes', 3: 'Miércoles', 4: 'Jueves', 5: 'Viernes', 6: 'Sábado'}
     df_orders['order_dow'] = df_orders['order_dow'].replace(dias_dict)
     # --- SIDEBAR: Filtros ---
@@ -285,6 +287,8 @@ try:
 
         st.header("📊 El Factor de Retención")    
 
+        st.space()
+
         # 1. Preparación de los datos (Top 20 Reordenados)
         df_order_prod = load_order_prod().merge(df_filtered[['order_id','order_dow','order_hour_of_day']], on='order_id', how='inner') 
         df_products = load_products()
@@ -446,16 +450,23 @@ st.markdown("---") # Una línea divisoria clara
 
 
 st.markdown("""
-### 📧 Contacto y Colaboración
-Si te interesa profundizar en los modelos matemáticos de este análisis o discutir oportunidades en **Data Science**, no dudes en contactarme.
-"""
+### 📫 Contacto y Colaboración
+¿Listo para transformar tus datos en estrategia?
+            
+Actualmente abierto a colaborar en proyectos de Data Science, Machine Learning y consultoría analítica."""
 )
-cols = st.columns(4)
-# Sustituye con tus links reales
-cols[0].write("💼 [Portafolio](https://davidvaac.github.io/DavidVaAc/)")
-cols[1].write("🔗 [LinkedIn](https://www.linkedin.com/in/david-fernando-valle-acosta-b18268265/)")
-cols[2].write("📁 [GitHub](https://github.com/DavidVaAc)")
-cols[3].write("✉️ [Email](mailto:davidfervalle@gmail.com)")
+st.markdown("---")
+st.markdown(
+    """
+    <p style='text-align: center;'>
+        <a href='https://davidvaac.github.io/DavidVaAc/'>💼 Portafolio</a> &nbsp;&nbsp; | &nbsp;&nbsp;
+        <a href='https://www.linkedin.com/in/david-fernando-valle-acosta-b18268265/'>🔗 LinkedIn</a> &nbsp;&nbsp; | &nbsp;&nbsp;
+        <a href='https://github.com/DavidVaAc'>📁 GitHub</a> &nbsp;&nbsp; | &nbsp;&nbsp;
+        <a href='mailto:davidfervalle@gmail.com'>✉️ Email</a>
+    </p>
+    """, 
+    unsafe_allow_html=True
+)
 
 # Un pie de página discreto
 st.caption("© 2026 | Desarrollado por David Valle Acosta - Físico, UNAM")
