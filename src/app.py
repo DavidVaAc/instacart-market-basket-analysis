@@ -150,7 +150,7 @@ try:
     # --- ROW 2: Visualizaciones Temporales ---
     if not df_filtered.empty:
 
-        st.header("⏰ Dinámicas Temporales")
+        st.header("⏳ Dinámicas Temporales")
 
         st.space()
 
@@ -330,7 +330,7 @@ try:
 
         st.divider()
 
-        st.header("📈 El Factor de Retención")    
+        st.header("📦 Arquitectura del Consumo")    
 
         st.space()
 
@@ -376,7 +376,8 @@ try:
         with c1:
             st.plotly_chart(fig_top_reord, use_container_width=True)
 
-            st.info("""
+            st.info("""Identificar los artículos que los usuarios vuelven a solicitar de forma recurrente permite descifrar los "básicos" indispensables del hogar. Al analizar este segmento, observamos una consistencia casi perfecta con el volumen total de ventas, pero con matices interesantes:
+                    
  * 👑 **Los "Indispensables" del Inventario**: Nuevamente, la **Banana** y la **Bag of Organic Bananas** lideran el ranking. Su altísima tasa de reincidencia confirma que son productos de consumo diario y vida útil corta, lo que obliga al usuario a reponerlos en casi cada ciclo de compra (cada 7 días, como vimos en el análisis de recurrencia).
 
 * 🧬 **Consistencia en el Perfil Orgánico**: Existe una correlación casi total entre el volumen de ventas y la reincidencia. Los productos orgánicos (fresas, espinacas, aguacates) no solo son los más comprados, sino los que presentan mayor fidelidad. Esto sugiere que el consumidor de productos orgánicos en Instacart es un **perfil de cliente recurrente**, no ocasional.
@@ -428,7 +429,7 @@ try:
             x='count',
             y='razon_recompra',
             color='razon_recompra',
-            color_continuous_scale=winter_palette,
+            color_continuous_scale='Viridis',
             labels={
                 'count': 'Cantidad de productos por decil',
                 'razon_recompra': 'Razón de recompra'
@@ -450,10 +451,59 @@ try:
         fig_rank_reordered_vs_non.update_xaxes(showgrid=True, gridcolor='rgba(255,255,255,0.1)', type='category')
         fig_rank_reordered_vs_non.update_yaxes(showgrid=False)
 
-        with c2:
-            st.plotly_chart(fig_rank_reordered_vs_non, use_container_width=True)
 
-            st.info("""
+        departments_dist = df_order_prod['department'].value_counts().reset_index()
+        departments_dist['department'] = departments_dist['department'].str.title()
+
+        # 2. Crear la gráfica horizontal con Plotly Express
+        fig_depts = px.bar(
+            departments_dist,
+            x='count',
+            y='department',
+            orientation='h', # Gráfica horizontal
+            color='count',
+            color_continuous_scale=winter_palette,
+            labels={
+                'count': 'Volumen pedidos por departamento',
+                'department': 'Departamento'
+            },
+            title='Distribución y Dominancia por Departamento'.title()
+            )
+
+        # 3. Ajustes estéticos (Modo Oscuro y Limpieza)
+        fig_depts.update_layout(
+            plot_bgcolor='rgba(0,0,0,0)',
+            paper_bgcolor='rgba(0,0,0,0)',
+            font_color="white",
+            coloraxis_showscale=False,
+            showlegend=False,
+            yaxis={'categoryorder':'total ascending'}, # Asegura que el más vendido esté arriba
+            margin=dict(t=50, b=50, l=50, r=50),
+            height=600 # Un poco más de altura para que los nombres respiren
+        )
+
+        fig_depts.update_xaxes(showgrid=True, gridcolor='rgba(255,255,255,0.1)')
+        fig_depts.update_yaxes(showgrid=False)
+
+        with c2:
+            st.plotly_chart(fig_depts, use_container_width=True)
+
+            st.info("""Entender la macro-estructura de los pedidos permite identificar qué categorías sostienen la operación logística y cuáles son los verdaderos "imanes" de tráfico. Al analizar el volumen total por departamento, la jerarquía del sistema se revela con total claridad:
+
+* 🌽 El "Core" de Alta Frecuencia: El departamento de Produce (frutas y verduras) no solo lidera, sino que duplica en volumen al segundo lugar. Esta dominancia absoluta confirma que Instacart es, ante todo, una herramienta de reabastecimiento de frescos. Para el negocio, esto significa que la calidad percibida en este departamento define la retención del cliente: si el aguacate llega mal, se pierde la confianza en todo el carrito.
+
+* 🥛 Lácteos y Huevos como Pilares: Dairy Eggs ocupa el segundo puesto con una solidez notable. Al igual que las bananas en el análisis de productos, estos son artículos de "consumo invisible" pero constante. Son productos con una ventana de caducidad media, lo que refuerza la teoría de los ciclos de compra semanales (7 días) que observamos previamente.
+
+* 🥤 La Capa de Conveniencia: Los departamentos de Snacks y Beverages completan el grupo de cabeza. A diferencia de los perecederos, estos productos tienen márgenes de ganancia más altos y una vida útil prolongada. Su alta presencia sugiere que, una vez que el usuario entra por los básicos (frutas/leche), tiende a completar su canasta con artículos de conveniencia, lo que eleva el valor del ticket promedio.
+
+* 🧼 Segmentos de Especialidad y "Long-Tail": Departamentos como Personal Care, Babies o Pets muestran volúmenes significativamente menores. Esto indica que el usuario promedio aún no utiliza la plataforma para compras integrales de "tienda departamental", sino que mantiene una fidelidad selectiva. Aquí reside la mayor oportunidad de crecimiento mediante estrategias de cross-selling.
+
+💡 Insight de Operación: La logística de Instacart es, esencialmente, una cadena de frío y frescos. Más del 60% de la operación se concentra en departamentos con productos sensibles a la temperatura y al tiempo. Cualquier optimización en la ruta de entrega o en el proceso de selección (picking) en estas categorías tendrá un impacto desproporcionado en la rentabilidad y satisfacción final.
+""")
+     
+        st.plotly_chart(fig_rank_reordered_vs_non, use_container_width=True)
+
+        st.info("""
 Para entender la estructura del catálogo, se implementó una segmentación de productos por deciles basada en el volumen de transacciones. Cada segmento representa exactamente el **10% del volumen total de ventas**, permitiendo contrastar la popularidad contra la lealtad (recompra).
 
 1. 🎯 **Concentración Extrema de la Demanda (Efecto Pareto)**
