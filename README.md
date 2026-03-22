@@ -79,7 +79,7 @@ Utilizando un enfoque de deciles de volumen, se descubrió:
 
 ---
 
-## ✉️ Contacto
+## 📫 Contacto
 * 💼 [Portafolio](https://davidvaac.github.io/DavidVaAc/#)
 * 🌐 [Linkedin](www.linkedin.com/in/david-fernando-valle-acosta-b18268265)
 * 📋 [Curriculum](https://drive.google.com/file/d/1epmNOV5wLOiH2na0B_kiDaaevGUPrUdF/view?usp=sharing)
