@@ -16,6 +16,23 @@ Esta aplicación interactiva presenta los hallazgos clave del análisis de compo
 *Explora las métricas de lealtad, tiempos de compra y la eficiencia del catálogo.*
 """)
 
+st.info("""### 📊 Resumen Ejecutivo: Consumer Insights & Market Basket Analysis
+
+* **Contexto:** Este proyecto analiza un ecosistema masivo de datos transaccionales de Instacart (datos de 2017) para descifrar los patrones de compra y lealtad del usuario moderno. Este análisis transforma datos crudos de transacciones en inteligencia de negocio, identificando los motores de crecimiento y retención de la plataforma.
+
+* **Objetivo Estratégico:** Extraer inteligencia empresarial mediante la identificación de ventanas críticas de demanda, segmentación de usuarios por tasa de retorno y optimización del mix de productos.
+
+* **Insights de Alto Impacto:**
+
+    1. ⏰ **Detección de Picos de Demanda:** Se identificaron ventanas críticas de saturación logística los domingos y lunes entre las 10:00 y 15:00 hrs.
+
+    2. ⚡ **El Motor del Catálogo (Efecto Pareto)**: Existe una concentración masiva donde solo el 1.7% de los productos genera el 50% del volumen total de ventas. La operación depende de un núcleo de "Ultra-Alta Rotación".
+
+    3. 🌿 **La Ventaja Orgánica:** El segmento orgánico domina el Top 20 de ventas y presenta una tasa de recompra significativamente superior al promedio. El consumidor valora la salud y la frescura por sobre el precio.
+
+    4. ⏰ **Ciclos de Fidelidad Siete-Días:** El hábito de consumo es rítmico. El pico de pedidos ocurre en domingo/lunes y el tiempo de retorno más frecuente es de exactamente 7 días, lo que facilita la predicción de demanda y stock.
+        """)
+
 # Función para cargar datos (Usa @st.cache_data para que sea rápido)
 BASE_DIR = os.path.dirname(os.path.abspath(__file__))
 
@@ -110,7 +127,7 @@ try:
         st.space()
 
         # --- ROW 1: Métricas de Alto Nivel ---
-        col1, col2, col3 = st.columns(3)
+        col1, col2, col3 = st.columns(3, )
         col1.metric("Total de Órdenes", f"{len(df_filtered):,}")
         col2.metric("Promedio Hora de Compra", f"{df_filtered['order_hour_of_day'].mean():.1f} hrs")
         col3.metric("Día Pico", f"{df_filtered['order_dow'].mode()[0]}")
