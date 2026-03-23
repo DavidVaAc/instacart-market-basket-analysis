@@ -352,6 +352,7 @@ try:
         st.space()
         st.space()
 
+
         c1, c2 = st.columns(2)
         c1.metric("Media", 
                     f"{df_orders['days_since_prior_order'].mean():.0f}",
@@ -363,8 +364,8 @@ try:
                     delta="Días desde la compra previa",
                     delta_color=delta1,
                     delta_arrow="off")
-
-        st.space()        
+        
+        st.space()
 
         st.plotly_chart(fig_reorder, width='stretch')
 
@@ -585,34 +586,38 @@ try:
                     delta_arrow="off") 
 
         st.space()          
-     
-        st.plotly_chart(fig_rank_reordered_vs_non, width='stretch')
 
-        st.info(r"""
-Para entender la estructura del catálogo, se implementó una segmentación de productos por deciles basada en el volumen de transacciones. Cada segmento representa exactamente el **10% del volumen total de ventas**, permitiendo contrastar la popularidad contra la lealtad (recompra).
+        cols = st.columns([1, 2, 1]) # Dedicamos más espacio a la gráfica que a las métricas
 
-1. 🎯 **Concentración Extrema de la Demanda (Efecto Pareto)**
+        with cols[1]: 
 
-    Los datos revelan una asimetría masiva en el rendimiento de los productos:
+            st.plotly_chart(fig_rank_reordered_vs_non, width='stretch')
 
-    * 💎 **La Élite del Catálogo (Decil 1)**: Únicamente **18 productos** (el $0.04\%$ del total) son responsables del primer $10\%$ de todas las ventas. Estos son los "motores" de la plataforma.
+            st.info(r"""
+    Para entender la estructura del catálogo, se implementó una segmentación de productos por deciles basada en el volumen de transacciones. Cada segmento representa exactamente el **10% del volumen total de ventas**, permitiendo contrastar la popularidad contra la lealtad (recompra).
 
-    * ⚖️ **Punto de Equilibrio ($50/1.7$)**: Los primeros 785 productos ($1.7\%$ del catálogo) generan más de la mitad del volumen transaccional.
+    1. 🎯 **Concentración Extrema de la Demanda (Efecto Pareto)**
 
-    * 🏷️ **La "Larga Cola" (Decil 10)**: El último $10\%$ de las ventas está disperso entre 36,445 productos ($80\%$ del catálogo).
+        Los datos revelan una asimetría masiva en el rendimiento de los productos:
 
-    * 🚀 **Diferencial de Velocidad**: Un producto del primer decil se vende, en promedio, 2,000 veces más que uno del último decil.
+        * 💎 **La Élite del Catálogo (Decil 1)**: Únicamente **18 productos** (el $0.04\%$ del total) son responsables del primer $10\%$ de todas las ventas. Estos son los "motores" de la plataforma.
 
-2. 🤝 **Correlación Volumen-Lealtad (Gradiente de Retención)**
+        * ⚖️ **Punto de Equilibrio ($50/1.7$)**: Los primeros 785 productos ($1.7\%$ del catálogo) generan más de la mitad del volumen transaccional.
 
-    Se identificó que la popularidad no solo atrae volumen, sino que fomenta la lealtad:
+        * 🏷️ **La "Larga Cola" (Decil 10)**: El último $10\%$ de las ventas está disperso entre 36,445 productos ($80\%$ del catálogo).
 
-    * 🧲 **Decil de Alta Fidelidad**: El primer decil presenta una razón de recompra del $76.3\%$, la más alta del sistema.
+        * 🚀 **Diferencial de Velocidad**: Un producto del primer decil se vende, en promedio, 2,000 veces más que uno del último decil.
 
-    * 📉 **Degradación Progresiva**: Existe un gradiente de lealtad decreciente de entre el $5\%$ y el $7\%$ por cada decil. A medida que un producto es menos popular, su probabilidad de ser vuelto a comprar cae drásticamente, llegando apenas al $42.4\%$ en el último decil.
+    2. 🤝 **Correlación Volumen-Lealtad (Gradiente de Retención)**
 
-💡 **Insight Estratégico**: El negocio posee un núcleo de "Ultra-Alta Rotación" extremadamente fiel. Mientras que el $80\%$ del catálogo (la Long Tail) ofrece variedad, el éxito operativo y la retención del usuario dependen casi exclusivamente del $2\%$ de los productos. Cualquier interrupción en la cadena de suministro de este núcleo tendría un impacto sistémico inmediato.
-                """)
+        Se identificó que la popularidad no solo atrae volumen, sino que fomenta la lealtad:
+
+        * 🧲 **Decil de Alta Fidelidad**: El primer decil presenta una razón de recompra del $76.3\%$, la más alta del sistema.
+
+        * 📉 **Degradación Progresiva**: Existe un gradiente de lealtad decreciente de entre el $5\%$ y el $7\%$ por cada decil. A medida que un producto es menos popular, su probabilidad de ser vuelto a comprar cae drásticamente, llegando apenas al $42.4\%$ en el último decil.
+
+    💡 **Insight Estratégico**: El negocio posee un núcleo de "Ultra-Alta Rotación" extremadamente fiel. Mientras que el $80\%$ del catálogo (la Long Tail) ofrece variedad, el éxito operativo y la retención del usuario dependen casi exclusivamente del $2\%$ de los productos. Cualquier interrupción en la cadena de suministro de este núcleo tendría un impacto sistémico inmediato.
+                    """)
         
         st.divider()
 
@@ -843,31 +848,35 @@ Para entender la estructura del catálogo, se implementó una segmentación de p
 
         st.space()    
 
-        st.plotly_chart(fig_rank_clients_reord, width='stretch')
+        cols = st.columns([1, 2, 1]) # Dedicamos más espacio a la gráfica que a las métricas
 
-        st.info(r"""
-            Se aplicó una división por deciles donde cada grupo representa el **10% del volumen total de artículos comprados**, permitiendo diseccionar la base de usuarios según su intensidad transaccional.
+        with cols[1]:
 
-            1. 🎯 **Concentración de Usuarios de Alto Valor (VIPs)**
+            st.plotly_chart(fig_rank_clients_reord, width='stretch')
 
-                Los datos revelan una asimetría crítica en la generación de volumen:
+            st.info(r"""
+                Se aplicó una división por deciles donde cada grupo representa el **10% del volumen total de artículos comprados**, permitiendo diseccionar la base de usuarios según su intensidad transaccional.
+
+                1. 🎯 **Concentración de Usuarios de Alto Valor (VIPs)**
+
+                    Los datos revelan una asimetría crítica en la generación de volumen:
+                    
+                    * 🥇 **El Núcleo Transaccional (Decil 1)**: Solo **2,209 usuarios** (apenas el $1.48\%$ de la base total) son responsables del primer $10\%$ de las ventas. Estos clientes "ultra-activos" son los pilares de la estabilidad operativa.
+
+                    * 🐉 **Dispersión en la Base (Decil 10)**: En contraste, el último $10\%$ del volumen es generado por **61,966 usuarios**, lo que evidencia un segmento de clientes ocasionales o en fase de prueba.
+
+                    * 💎 **Ratio de Intensidad**: Un cliente del Decil 1 es, en promedio, **28 veces más activo** que un cliente del Decil 10.
                 
-                * 🥇 **El Núcleo Transaccional (Decil 1)**: Solo **2,209 usuarios** (apenas el $1.48\%$ de la base total) son responsables del primer $10\%$ de las ventas. Estos clientes "ultra-activos" son los pilares de la estabilidad operativa.
+                2. 📈 **Correlación Actividad-Lealtad (Gradiente de Retención)**
+                
+                    Se confirma que a mayor volumen de compra, mayor es la fidelidad al catálogo:
 
-                * 🐉 **Dispersión en la Base (Decil 10)**: En contraste, el último $10\%$ del volumen es generado por **61,966 usuarios**, lo que evidencia un segmento de clientes ocasionales o en fase de prueba.
+                    * 🤝 **Máxima Fidelidad (Decil 1)**: Presenta una tasa de recompra del $77.3\%$. Este grupo prácticamente ha automatizado su consumo.
 
-                * 💎 **Ratio de Intensidad**: Un cliente del Decil 1 es, en promedio, **28 veces más activo** que un cliente del Decil 10.
-            
-            2. 📈 **Correlación Actividad-Lealtad (Gradiente de Retención)**
-            
-                Se confirma que a mayor volumen de compra, mayor es la fidelidad al catálogo:
+                    * 📉 **Gradiente de Descenso**: Se observa una degradación constante y predecible de aproximadamente $5\%$ por decil.
 
-                * 🤝 **Máxima Fidelidad (Decil 1)**: Presenta una tasa de recompra del $77.3\%$. Este grupo prácticamente ha automatizado su consumo.
-
-                * 📉 **Gradiente de Descenso**: Se observa una degradación constante y predecible de aproximadamente $5\%$ por decil.
-
-                * ⚠️ **Umbral Crítico**: Incluso en el Decil 10, la recompra se mantiene en un $42.2\%$, lo que indica que Instacart tiene una "barrera de entrada" de lealtad alta; casi la mitad de los clientes ocasionales tienden a repetir algún producto.
-                """)   
+                    * ⚠️ **Umbral Crítico**: Incluso en el Decil 10, la recompra se mantiene en un $42.2\%$, lo que indica que Instacart tiene una "barrera de entrada" de lealtad alta; casi la mitad de los clientes ocasionales tienden a repetir algún producto.
+                    """)   
 
     else:
         # Mensaje amigable si el usuario filtra demasiado
