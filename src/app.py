@@ -10,7 +10,7 @@ plt.style.use('dark_background')
 st.set_page_config(page_title="Instacart Insights Dashboard", layout="wide")
 
 st.markdown(
-    """
+    r"""
     <style>
     /* 1. Centrar todo el contenedor de la métrica */
     [data-testid="stMetric"] {
@@ -42,14 +42,25 @@ st.markdown(
     unsafe_allow_html=True
 )
 
+tipos_optimizados = {
+    'user_id': 'int32',
+    'product_id': 'int32',
+    'order_id': 'int32',
+    'aisle_id': 'int32',
+    'department_id': 'int32',
+    'order_dow': 'int32',
+    'order_hour_of_day': 'int32',
+    'reordered': 'int32'
+}
+
 # Título y Contexto
 st.title("🛒 Instacart Market Basket Analysis")
-st.markdown("""
+st.markdown(r"""
 Esta aplicación interactiva presenta los hallazgos clave del análisis de comportamiento del consumidor.
 *Explora las métricas de lealtad, tiempos de compra y la eficiencia del catálogo.*
 """)
 
-st.info("""### 📊 Resumen Ejecutivo: Consumer Insights & Market Basket Analysis
+st.info(r"""### 📊 Resumen Ejecutivo: Consumer Insights & Market Basket Analysis
 
 * **Contexto:** Este proyecto analiza un ecosistema masivo de datos transaccionales de Instacart (datos de 2017) para descifrar los patrones de compra y lealtad del usuario moderno. Este análisis transforma datos crudos de transacciones en inteligencia de negocio, identificando los motores de crecimiento y retención de la plataforma.
 
@@ -77,28 +88,28 @@ BASE_DIR = os.path.dirname(os.path.abspath(__file__))
 def load_orders():
     # Asegúrate de que las rutas coincidan con tu estructura
     path = os.path.join(BASE_DIR, '..', 'data', 'instacart_orders.csv')
-    orders = pd.read_csv(path, sep=';')
+    orders = pd.read_csv(path, sep=';', dtype=tipos_optimizados)
     return orders
 
 @st.cache_data
 def load_order_prod():
     # Asegúrate de que las rutas coincidan con tu estructura
     path = os.path.join(BASE_DIR, '..', 'data', 'order_products.csv')
-    order_prods = pd.read_csv(path, sep=';')
+    order_prods = pd.read_csv(path, sep=';', dtype=tipos_optimizados)
     return order_prods
 
 @st.cache_data
 def load_products():
     # Asegúrate de que las rutas coincidan con tu estructura
     path = os.path.join(BASE_DIR, '..', 'data', 'products.csv')
-    products = pd.read_csv(path, sep=';')
+    products = pd.read_csv(path, sep=';', dtype=tipos_optimizados)
     return products
 
 @st.cache_data
 def load_departments():
     # Asegúrate de que las rutas coincidan con tu estructura
     path = os.path.join(BASE_DIR, '..', 'data', 'departments.csv')
-    departments = pd.read_csv(path, sep=';')
+    departments = pd.read_csv(path, sep=';', dtype=tipos_optimizados)
     return departments
 
 delta1 = "yellow" # Color para los deltas en las métricas
@@ -157,7 +168,8 @@ try:
     df_departments = load_departments()
     departments = st.sidebar.multiselect("Selecciona los departamentos:", 
                            options=sorted(df_departments['department'].unique()), 
-                           default=sorted(df_departments['department'].unique())
+                           default=sorted(df_departments['department'].unique()),
+                           format_func=lambda x: x.title()
                             )
     df_departments = df_departments[df_departments['department'].isin(departments)]
 
@@ -171,7 +183,7 @@ try:
 
     st.sidebar.markdown("---")
     with st.sidebar.expander("🔬 Nota Metodológica"):
-        st.write("""
+        st.write(r"""
     **Enfoque Estadístico:**
     Este dashboard utiliza **análisis de densidad acumulada** para identificar el comportamiento asintótico del catálogo.
          
@@ -230,7 +242,7 @@ try:
             fig_hours.update_yaxes(showgrid=True, gridcolor='rgba(255,255,255,0.1)')
 
             # 5. Desplegar en Streamlit
-            st.plotly_chart(fig_hours, use_container_width=True)
+            st.plotly_chart(fig_hours, width='stretch')
 
             st.info(""" Tras modelar el volumen de transacciones por hora, se identifica un comportamiento bimodal con una clara dominancia en el horario diurno. Los hallazgos principales son:
 
@@ -292,9 +304,9 @@ try:
                 )
 
             # 5. Desplegar en Streamlit
-            st.plotly_chart(fig_dow, use_container_width=True)    
+            st.plotly_chart(fig_dow, width='stretch')    
 
-            st.info("""El análisis de volumen por día de la semana (**order_dow**) revela una concentración de demanda muy marcada en el inicio del ciclo semanal. Los hallazgos principales son:
+            st.info(r"""El análisis de volumen por día de la semana (**order_dow**) revela una concentración de demanda muy marcada en el inicio del ciclo semanal. Los hallazgos principales son:
 
 * 🚀 **Pico de Alta Demanda (Fase de Reabastecimiento)**: El **domingo (84,090 órdenes)** y el **lunes (82,185 órdenes)** se consolidan como los días de mayor actividad transaccional. Este comportamiento sugiere que el usuario promedio de Instacart utiliza la plataforma como su herramienta principal para la planificación y compra de la despensa semanal.
 
@@ -365,9 +377,9 @@ try:
 
         st.space()        
 
-        st.plotly_chart(fig_reorder, use_container_width=True)
+        st.plotly_chart(fig_reorder, width='stretch')
 
-        st.info("""El estudio de la variable days_since_prior_order permite cuantificar la lealtad y los hábitos de consumo cíclicos de la base de usuarios. Los hallazgos demuestran una estructura de comportamiento altamente predecible:
+        st.info(r"""El estudio de la variable days_since_prior_order permite cuantificar la lealtad y los hábitos de consumo cíclicos de la base de usuarios. Los hallazgos demuestran una estructura de comportamiento altamente predecible:
 
 * 📅 El Ciclo Semanal (Pico de los 7 días): Se observa un pico dominante a los 7 días, lo que confirma que el hábito de consumo más fuerte es el reabastecimiento semanal. La mediana ($50\%$) coincide exactamente con este valor, indicando que la mitad de los usuarios recurrentes regresan antes de una semana.
 
@@ -473,9 +485,9 @@ try:
         # 4. Desplegar en Streamlit con su Insight de Negocio
         c1, c2 = st.columns(2)
         with c1:
-            st.plotly_chart(fig_top_reord, use_container_width=True)
+            st.plotly_chart(fig_top_reord, width='stretch')
 
-            st.info("""Identificar los artículos que los usuarios vuelven a solicitar de forma recurrente permite descifrar los "básicos" indispensables del hogar. Al analizar este segmento, observamos una consistencia casi perfecta con el volumen total de ventas, pero con matices interesantes:
+            st.info(r"""Identificar los artículos que los usuarios vuelven a solicitar de forma recurrente permite descifrar los "básicos" indispensables del hogar. Al analizar este segmento, observamos una consistencia casi perfecta con el volumen total de ventas, pero con matices interesantes:
                     
  * 👑 **Los "Indispensables" del Inventario**: Nuevamente, la **Banana** y la **Bag of Organic Bananas** lideran el ranking. Su altísima tasa de reincidencia confirma que son productos de consumo diario y vida útil corta, lo que obliga al usuario a reponerlos en casi cada ciclo de compra (cada 7 días, como vimos en el análisis de recurrencia).
 
@@ -546,9 +558,9 @@ try:
         fig_depts.update_yaxes(showgrid=False)
 
         with c2:
-            st.plotly_chart(fig_depts, use_container_width=True)
+            st.plotly_chart(fig_depts, width='stretch')
 
-            st.info("""Entender la macro-estructura de los pedidos permite identificar qué categorías sostienen la operación logística y cuáles son los verdaderos "imanes" de tráfico. Al analizar el volumen total por departamento, la jerarquía del sistema se revela con total claridad:
+            st.info(r"""Entender la macro-estructura de los pedidos permite identificar qué categorías sostienen la operación logística y cuáles son los verdaderos "imanes" de tráfico. Al analizar el volumen total por departamento, la jerarquía del sistema se revela con total claridad:
 
 * 🌽 El "Core" de Alta Frecuencia: El departamento de Produce (frutas y verduras) no solo lidera, sino que duplica en volumen al segundo lugar. Esta dominancia absoluta confirma que Instacart es, ante todo, una herramienta de reabastecimiento de frescos. Para el negocio, esto significa que la calidad percibida en este departamento define la retención del cliente: si el aguacate llega mal, se pierde la confianza en todo el carrito.
 
@@ -585,9 +597,9 @@ try:
 
         st.space()          
      
-        st.plotly_chart(fig_rank_reordered_vs_non, use_container_width=True)
+        st.plotly_chart(fig_rank_reordered_vs_non, width='stretch')
 
-        st.info("""
+        st.info(r"""
 Para entender la estructura del catálogo, se implementó una segmentación de productos por deciles basada en el volumen de transacciones. Cada segmento representa exactamente el **10% del volumen total de ventas**, permitiendo contrastar la popularidad contra la lealtad (recompra).
 
 1. 🎯 **Concentración Extrema de la Demanda (Efecto Pareto)**
@@ -711,7 +723,7 @@ Para entender la estructura del catálogo, se implementó una segmentación de p
             
             st.space()
   
-            st.plotly_chart(fig_qorder_vs_qproducts, use_container_width=True)
+            st.plotly_chart(fig_qorder_vs_qproducts, width='stretch')
 
             st.info(r"""
                 El estudio del volumen de artículos por transacción permite entender el uso que el cliente le da a la plataforma (¿compras de conveniencia o abastecimiento total?). Los datos revelan una distribución asimétrica con una "larga cola":
@@ -772,7 +784,7 @@ Para entender la estructura del catálogo, se implementó una segmentación de p
             
             st.space()
 
-            st.plotly_chart(fig_orders_per_client, use_container_width=True)
+            st.plotly_chart(fig_orders_per_client, width='stretch')
 
             st.info(r"""
                 El análisis de la frecuencia de compra por usuario único permite entender la penetración de la plataforma y el nivel de retención. Los datos revelan una base de usuarios con las siguientes características:
@@ -842,7 +854,7 @@ Para entender la estructura del catálogo, se implementó una segmentación de p
 
         st.space()    
 
-        st.plotly_chart(fig_rank_clients_reord, use_container_width=True)        
+        st.plotly_chart(fig_rank_clients_reord, width='stretch')
 
         st.info(r"""
             Se aplicó una división por deciles donde cada grupo representa el **10% del volumen total de artículos comprados**, permitiendo diseccionar la base de usuarios según su intensidad transaccional.
