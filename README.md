@@ -33,7 +33,7 @@ Este proyecto transforma un dataset masivo de transacciones de **Instacart** en 
 Explora el proceso técnico detrás de los datos y la herramienta interactiva final:
 
 ### 📊 [Dashboard Interactivo (Streamlit)](https://8lyyid3uaf6wn9a3cfxtev.streamlit.app/)
-> **Ideal para:** Una exploración rápida y visual. Permite filtrar por día, hora y ver el comportamiento del catálogo con gráficas de Plotly.
+> **Ideal para:** Una exploración rápida y visual. Permite filtrar por día, hora, departamento y ver el comportamiento del catálogo con gráficas de Plotly.
 
 ### 📓 [Documentación Técnica (Jupyter Notebook)](https://github.com/DavidVaAc/instacart-market-basket-analysis/blob/main/notebooks/instacart_eda_analysis.ipynb)
 > **Ideal para:** Revisar el rigor científico. Contiene la limpieza de datos, el procesamiento de tipos de variables y la lógica matemática detrás de los deciles de Pareto.
