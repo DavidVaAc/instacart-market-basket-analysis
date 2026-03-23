@@ -42,17 +42,6 @@ st.markdown(
     unsafe_allow_html=True
 )
 
-tipos_optimizados = {
-    'user_id': 'int32',
-    'product_id': 'int32',
-    'order_id': 'int32',
-    'aisle_id': 'int32',
-    'department_id': 'int32',
-    'order_dow': 'int32',
-    'order_hour_of_day': 'int32',
-    'reordered': 'int32'
-}
-
 # Título y Contexto
 st.title("🛒 Instacart Market Basket Analysis")
 st.markdown(r"""
@@ -84,32 +73,51 @@ st.info(r"""### 📊 Resumen Ejecutivo: Consumer Insights & Market Basket Analys
 # Función para cargar datos (Usa @st.cache_data para que sea rápido)
 BASE_DIR = os.path.dirname(os.path.abspath(__file__))
 
+tipos_order = {
+    'user_id': 'int32',
+    'order_id': 'int32',
+    'order_number': 'int32',
+    'order_dow': 'int8',
+    'order_hour_of_day': 'int8',
+    'reordered': 'int32'
+}
+
+tipos_order_prod = {'order_id': 'int32', 
+                    'product_id': 'int32',
+                    'reordered': 'int8'}
+
+tipos_prods = {'product_id': 'int32',
+               'aisle_id': 'int32',
+                'department_id': 'int32'}
+
+tipos_departments = {'department_id': 'int32'}
+
 @st.cache_data
 def load_orders():
     # Asegúrate de que las rutas coincidan con tu estructura
     path = os.path.join(BASE_DIR, '..', 'data', 'instacart_orders.csv')
-    orders = pd.read_csv(path, sep=';', dtype=tipos_optimizados)
+    orders = pd.read_csv(path, sep=';', dtype=tipos_order)
     return orders
 
 @st.cache_data
 def load_order_prod():
     # Asegúrate de que las rutas coincidan con tu estructura
     path = os.path.join(BASE_DIR, '..', 'data', 'order_products.csv')
-    order_prods = pd.read_csv(path, sep=';', dtype=tipos_optimizados)
+    order_prods = pd.read_csv(path, sep=';', dtype=tipos_order_prod)
     return order_prods
 
 @st.cache_data
 def load_products():
     # Asegúrate de que las rutas coincidan con tu estructura
     path = os.path.join(BASE_DIR, '..', 'data', 'products.csv')
-    products = pd.read_csv(path, sep=';', dtype=tipos_optimizados)
+    products = pd.read_csv(path, sep=';', dtype=tipos_prods)
     return products
 
 @st.cache_data
 def load_departments():
     # Asegúrate de que las rutas coincidan con tu estructura
     path = os.path.join(BASE_DIR, '..', 'data', 'departments.csv')
-    departments = pd.read_csv(path, sep=';', dtype=tipos_optimizados)
+    departments = pd.read_csv(path, sep=';', dtype=tipos_departments)
     return departments
 
 delta1 = "yellow" # Color para los deltas en las métricas
