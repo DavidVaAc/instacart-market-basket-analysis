@@ -150,9 +150,9 @@ try:
     # 4. Filtrado Dinámico
     if not dias_seleccionados:
         st.sidebar.error("⚠️ Selecciona al menos un día para mostrar resultados.")
-        df_filtered = df_orders.head(0) # DataFrame vacío
+        df_orders = df_orders.head(0) # DataFrame vacío
     else:
-        df_filtered = df_orders[df_orders['order_dow'].isin(dias_seleccionados)]
+        df_orders = df_orders[df_orders['order_dow'].isin(dias_seleccionados)]
 
     st.sidebar.markdown("---")
     st.sidebar.write("Selecciona el Rango de Horario:")
@@ -166,9 +166,9 @@ try:
     )
 
     # Aplicar el segundo filtro al DataFrame ya filtrado por días
-    df_filtered = df_filtered[
-        (df_filtered['order_hour_of_day'] >= hora_inicio) & 
-        (df_filtered['order_hour_of_day'] <= hora_fin)
+    df_orders = df_orders[
+        (df_orders['order_hour_of_day'] >= hora_inicio) & 
+        (df_orders['order_hour_of_day'] <= hora_fin)
     ]
     st.sidebar.markdown("---")
 
@@ -186,8 +186,8 @@ try:
     df_products = load_products().merge(df_departments[['department_id', 'department']], on='department_id', how='inner')
     df_order_prod = load_order_prod().merge(df_products[['product_id', 'product_name', 'department']], on='product_id', how='inner')
 
-    df_filtered = df_filtered[df_filtered['order_id'].isin(df_order_prod['order_id'].unique())]
-    df_order_prod = df_order_prod.merge(df_filtered[['order_id','order_dow','order_hour_of_day', 'user_id']], on='order_id', how='inner')
+    df_orders = df_orders[df_orders['order_id'].isin(df_order_prod['order_id'].unique())]
+    df_order_prod = df_order_prod.merge(df_orders[['order_id','order_dow','order_hour_of_day', 'user_id']], on='order_id', how='inner')
 
     st.sidebar.markdown("---")
     with st.sidebar.expander("🔬 Nota Metodológica"):
@@ -206,7 +206,7 @@ try:
     st.divider()
     
     # --- ROW 2: Visualizaciones Temporales ---
-    if not df_filtered.empty:
+    if not df_orders.empty:
 
         st.header("⏳ Dinámicas Temporales")
 
@@ -216,10 +216,10 @@ try:
 
         with c1:
 
-            st.metric("Promedio Hora de Compra", f"{df_filtered['order_hour_of_day'].mean():.1f} hrs")
+            st.metric("Promedio Hora de Compra", f"{df_orders['order_hour_of_day'].mean():.1f} hrs")
 
             # 1. Preparación de datos
-            oders_by_hour = df_filtered.groupby('order_hour_of_day').size().reset_index(name='volumen')
+            oders_by_hour = df_orders.groupby('order_hour_of_day').size().reset_index(name='volumen')
 
             # 2. Extraer la paleta 'winter' de Seaborn para que Plotly la reconozca
             # Usamos 24 colores para representar las 24 horas del día
@@ -265,10 +265,10 @@ try:
 
         with c2:
 
-            st.metric("Día Pico", f"{df_filtered['order_dow'].mode()[0]}")
+            st.metric("Día Pico", f"{df_orders['order_dow'].mode()[0]}")
 
             # 1. Preparación de los datos (manteniendo tu lógica de nombres de días)
-            bar_insta_orders = df_filtered.groupby('order_dow').size().reset_index(name='volumen')
+            bar_insta_orders = df_orders.groupby('order_dow').size().reset_index(name='volumen')
             nombres_dias = ['Domingo', 'Lunes', 'Martes', 'Miércoles', 'Jueves', 'Viernes', 'Sábado']
 
             # 2. Extraer la paleta 'cool' de Seaborn para Plotly
@@ -328,7 +328,7 @@ try:
         # --- ROW 3: El Hallazgo de Pareto ---
         # 1. Preparación de los datos (agrupando por días desde la compra previa)
         # Asegúrate de usar el DataFrame filtrado si aplica, o el original
-        bar_2_data = df_filtered.groupby('days_since_prior_order').size().reset_index(name='volumen')
+        bar_2_data = df_orders.groupby('days_since_prior_order').size().reset_index(name='volumen')
         bar_2_data['days_since_prior_order'] = bar_2_data['days_since_prior_order'].astype('int')
 
         # 2. Crear la gráfica con Plotly Express
@@ -373,12 +373,12 @@ try:
 
         c1, c2 = st.columns(2)
         c1.metric("Media", 
-                    f"{df_filtered['days_since_prior_order'].mean():.0f}",
+                    f"{df_orders['days_since_prior_order'].mean():.0f}",
                     delta="Días desde la compra previa",
                     delta_color=delta1,
                     delta_arrow="off")
         c2.metric("Mediana", 
-                    f"{df_filtered['days_since_prior_order'].median():.0f}",
+                    f"{df_orders['days_since_prior_order'].median():.0f}",
                     delta="Días desde la compra previa",
                     delta_color=delta1,
                     delta_arrow="off")
@@ -649,7 +649,7 @@ Para entender la estructura del catálogo, se implementó una segmentación de p
         qorder_vs_qproducts.reset_index(inplace=True)
 
         # Contamos la cantidad de ordenes por cliente y el número de clientes para cada cantidad de ordenes
-        orders_per_client = df_filtered.groupby('user_id')['order_id'].count()
+        orders_per_client = df_orders.groupby('user_id')['order_id'].count()
         dist_per_clients = pd.DataFrame(orders_per_client.value_counts()).rename(columns={'count': 'clients'})
         dist_per_clients.reset_index(inplace=True)
 
