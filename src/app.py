@@ -9,6 +9,39 @@ plt.style.use('dark_background')
 # Configuración de la página
 st.set_page_config(page_title="Instacart Insights Dashboard", layout="wide")
 
+st.markdown(
+    """
+    <style>
+    /* 1. Centrar todo el contenedor de la métrica */
+    [data-testid="stMetric"] {
+        width: fit-content;
+        margin: auto;
+    }
+
+    /* 2. Centrar el Label (Título) */
+    [data-testid="stMetricLabel"] > div {
+        justify-content: center !important;
+    }
+
+    /* 3. Centrar el Valor (El número grande) */
+    [data-testid="stMetricValue"] > div {
+        justify-content: center !important;
+    }
+
+    /* 4. Centrar el Delta (La flecha y el porcentaje) */
+    [data-testid="stMetricDelta"] > div {
+        justify-content: center !important;
+    }
+
+    /* Forzar que el texto interno también se centre */
+    [data-testid="stMetricValue"], [data-testid="stMetricLabel"] {
+        text-align: center !important;
+    }
+    </style>
+    """,
+    unsafe_allow_html=True
+)
+
 # Título y Contexto
 st.title("🛒 Instacart Market Basket Analysis")
 st.markdown("""
@@ -129,7 +162,7 @@ try:
     df_order_prod = load_order_prod().merge(df_products[['product_id', 'product_name', 'department']], on='product_id', how='inner')
 
     df_filtered = df_filtered[df_filtered['order_id'].isin(df_order_prod['order_id'].unique())]
-    df_order_prod = df_order_prod.merge(df_filtered[['order_id','order_dow','order_hour_of_day']], on='order_id', how='inner')
+    df_order_prod = df_order_prod.merge(df_filtered[['order_id','order_dow','order_hour_of_day', 'user_id']], on='order_id', how='inner')
 
     st.sidebar.markdown("---")
     with st.sidebar.expander("🔬 Nota Metodológica"):
@@ -159,6 +192,8 @@ try:
         col1.metric("Total de Órdenes", f"{len(df_filtered):,}")
         col2.metric("Promedio Hora de Compra", f"{df_filtered['order_hour_of_day'].mean():.1f} hrs")
         col3.metric("Día Pico", f"{df_filtered['order_dow'].mode()[0]}")
+
+        st.space()
 
         c1, c2 = st.columns(2)
 
@@ -341,6 +376,56 @@ try:
         # Unimos con la tabla de productos para obtener los nombres
         top_reord_data = top_reord_data.merge(df_products[['product_id', 'product_name']], on='product_id', how='left')
 
+        departments_dist = df_order_prod['department'].value_counts().reset_index()
+        departments_dist['department'] = departments_dist['department'].str.title()
+
+        # Agrupamos por 'product_id' y contamos la cantidad de 'order_id' para cada producto,
+        # pero esta vez lo hacemos para los productos reordenados y no reordenados.
+        reordered_vs_non = pd.pivot_table(df_order_prod, index=['product_id'], columns=['reordered'], values='order_id', aggfunc='count')
+
+        # Rellenamos los valores ausentes con 0, 
+        # ya que si no hay un valor para un producto en la columna de reordenados o no reordenados, 
+        # significa que ese producto no tiene pedidos en esa categoría.
+        reordered_vs_non.fillna(0, inplace=True)
+
+        # Calculamos el total de pedidos para cada producto sumando los pedidos reordenados y no reordenados.
+        reordered_vs_non['total'] = (reordered_vs_non[0] + reordered_vs_non[1])
+
+        # Calculamos la razón de recompra dividiendo los pedidos reordenados entre el total de pedidos para cada producto.
+        reordered_vs_non['razon_recompra'] = reordered_vs_non[1]/reordered_vs_non['total']
+        reordered_vs_non.reset_index(inplace=True)
+
+        # Realizamos un merge entre el DataFrame de pedidos reordenados y no reordenados y el DataFrame de productos para obtener los nombres de los productos.
+        reordered_vs_non = pd.merge(reordered_vs_non, df_products[['product_id', 'product_name']], how='inner', on='product_id')
+        reordered_vs_non.sort_values(['total', 'razon_recompra'], ascending=False, inplace=True)
+        reordered_vs_non.reset_index(inplace=True, drop=True)
+
+        # Creamos una nueva columna llamada 'top' que clasifica los productos en 10 grupos, cada grupo representa un decil de la contribución acumulada al total de pedidos.
+        n_divisones = 10
+        reordered_vs_non['top'] = ((reordered_vs_non['total'].cumsum()/reordered_vs_non['total'].sum())*n_divisones+1).astype('int').clip(1, n_divisones)
+        reordered_vs_non = reordered_vs_non.iloc[:,[0, 6, 5, 1, 2, 3, 4]]
+
+        # Creamos un DataFrame que muestra la cantidad de productos en cada grupo de 'top'
+        rank_reordered_vs_non = pd.DataFrame(reordered_vs_non['top'].value_counts(ascending=True))
+
+        # Calculamos la razón de recompra para cada grupo de 'top' dividiendo la suma de pedidos reordenados entre la suma del total de pedidos para cada grupo.
+        razon_recompra =[]
+        for rank in range(1,n_divisones+1):
+            razon_recompra.append(reordered_vs_non[reordered_vs_non['top'] == rank][1].sum()/reordered_vs_non[reordered_vs_non['top'] == rank]['total'].sum())
+        rank_reordered_vs_non['razon_recompra'] = razon_recompra           
+
+        # --- ROW 1: Métricas de Alto Nivel ---
+        col1, col2, col3 = st.columns(3, )
+        col1.metric("Producto Estelelar", 
+                    top_reord_data.iloc[0]['product_name'])
+        col2.metric("Departamento Dominante", 
+                    departments_dist.iloc[0]['department'])
+        col3.metric("50% De Transacciones", 
+                    f"{rank_reordered_vs_non['count'][0:5].sum()} Productos",
+                    delta=f"{rank_reordered_vs_non['count'][0:5].sum()/rank_reordered_vs_non['count'].sum():.1%} del Catálogo")
+        
+        st.space()
+
         # 2. Crear la gráfica horizontal con Plotly Express
         fig_top_reord = px.bar(
             top_reord_data,
@@ -388,41 +473,6 @@ try:
 
 💡 **Insight de Retención**: Los productos en esta lista son los "anclas" de la aplicación. Si un cliente encuentra su marca favorita de leche o la calidad de sus bananas siempre disponible, la probabilidad de que realice su próximo pedido (el salto crítico de la compra 1 a la 2 que analizamos antes) aumenta exponencialmente. """)
 
-        # Agrupamos por 'product_id' y contamos la cantidad de 'order_id' para cada producto,
-        # pero esta vez lo hacemos para los productos reordenados y no reordenados.
-        reordered_vs_non = pd.pivot_table(df_order_prod, index=['product_id'], columns=['reordered'], values='order_id', aggfunc='count')
-
-        # Rellenamos los valores ausentes con 0, 
-        # ya que si no hay un valor para un producto en la columna de reordenados o no reordenados, 
-        # significa que ese producto no tiene pedidos en esa categoría.
-        reordered_vs_non.fillna(0, inplace=True)
-
-        # Calculamos el total de pedidos para cada producto sumando los pedidos reordenados y no reordenados.
-        reordered_vs_non['total'] = (reordered_vs_non[0] + reordered_vs_non[1])
-
-        # Calculamos la razón de recompra dividiendo los pedidos reordenados entre el total de pedidos para cada producto.
-        reordered_vs_non['razon_recompra'] = reordered_vs_non[1]/reordered_vs_non['total']
-        reordered_vs_non.reset_index(inplace=True)
-
-        # Realizamos un merge entre el DataFrame de pedidos reordenados y no reordenados y el DataFrame de productos para obtener los nombres de los productos.
-        reordered_vs_non = pd.merge(reordered_vs_non, df_products[['product_id', 'product_name']], how='inner', on='product_id')
-        reordered_vs_non.sort_values(['total', 'razon_recompra'], ascending=False, inplace=True)
-        reordered_vs_non.reset_index(inplace=True, drop=True)
-
-        # Creamos una nueva columna llamada 'top' que clasifica los productos en 10 grupos, cada grupo representa un decil de la contribución acumulada al total de pedidos.
-        n_divisones = 10
-        reordered_vs_non['top'] = ((reordered_vs_non['total'].cumsum()/reordered_vs_non['total'].sum())*n_divisones+1).astype('int').clip(1, n_divisones)
-        reordered_vs_non = reordered_vs_non.iloc[:,[0, 6, 5, 1, 2, 3, 4]]
-
-        # Creamos un DataFrame que muestra la cantidad de productos en cada grupo de 'top'
-        rank_reordered_vs_non = pd.DataFrame(reordered_vs_non['top'].value_counts(ascending=True))
-
-        # Calculamos la razón de recompra para cada grupo de 'top' dividiendo la suma de pedidos reordenados entre la suma del total de pedidos para cada grupo.
-        razon_recompra =[]
-        for rank in range(1,n_divisones+1):
-            razon_recompra.append(reordered_vs_non[reordered_vs_non['top'] == rank][1].sum()/reordered_vs_non[reordered_vs_non['top'] == rank]['total'].sum())
-        rank_reordered_vs_non['razon_recompra'] = razon_recompra
-
         # 2. Crear la gráfica horizontal con Plotly Express
         fig_rank_reordered_vs_non = px.bar(
             rank_reordered_vs_non,
@@ -448,12 +498,8 @@ try:
             height=600 # Un poco más de altura para que los nombres respiren
             )
 
-        fig_rank_reordered_vs_non.update_xaxes(showgrid=True, gridcolor='rgba(255,255,255,0.1)', type='category')
-        fig_rank_reordered_vs_non.update_yaxes(showgrid=False)
-
-
-        departments_dist = df_order_prod['department'].value_counts().reset_index()
-        departments_dist['department'] = departments_dist['department'].str.title()
+        fig_rank_reordered_vs_non.update_xaxes(type='category')
+        fig_rank_reordered_vs_non.update_yaxes(showgrid=True, gridcolor='rgba(255,255,255,0.1)')
 
         # 2. Crear la gráfica horizontal con Plotly Express
         fig_depts = px.bar(
@@ -528,7 +574,248 @@ Para entender la estructura del catálogo, se implementó una segmentación de p
 
 💡 **Insight Estratégico**: El negocio posee un núcleo de "Ultra-Alta Rotación" extremadamente fiel. Mientras que el $80\%$ del catálogo (la Long Tail) ofrece variedad, el éxito operativo y la retención del usuario dependen casi exclusivamente del $2\%$ de los productos. Cualquier interrupción en la cadena de suministro de este núcleo tendría un impacto sistémico inmediato.
                 """)
-      
+        
+        st.divider()
+
+        st.header("👤 Perfil de Cliente y Mecánicas de Consumo")
+
+        st.space()  
+
+        # Agrupamos por 'order_id' y contamos la cantidad de 'product_id' para cada pedido. 
+        # Luego contamos la cantidad de pedidos para cada cantidad de productos por pedido, 
+        # ordenamos los valores por el índice y lo guardamos en un nuevo DataFrame.
+        # Finalmente, obtenemos el número de productos por pedido y el número de pedidos para cada cantidad de productos por pedido.
+        qorder_vs_qproducts = pd.DataFrame(df_order_prod.groupby('order_id')['product_id'].count().value_counts().sort_index())
+        qorder_vs_qproducts.index.name='number_of_products_per_order'
+        qorder_vs_qproducts.rename(columns={'count': 'number_of_orders'}, inplace=True)
+        qorder_vs_qproducts.reset_index(inplace=True)
+
+        # Contamos la cantidad de ordenes por cliente y el número de clientes para cada cantidad de ordenes
+        orders_per_client = df_filtered.groupby('user_id')['order_id'].count()
+        dist_per_clients = pd.DataFrame(orders_per_client.value_counts()).rename(columns={'count': 'clients'})
+        dist_per_clients.reset_index(inplace=True)
+
+        clients_reord = df_order_prod
+
+        # Creamos una tabla pivote para contar la cantidad de pedidos reordenados y no reordenados para cada cliente.
+        clients_reord = pd.pivot_table(clients_reord, values='order_id', index='user_id', columns='reordered', aggfunc='count', fill_value=0)
+        clients_reord.columns.name = None
+
+        # Calculamos el total de pedidos para cada cliente sumando los pedidos reordenados y no reordenados.
+        clients_reord['order_product'] = clients_reord[0]+clients_reord[1]
+
+        # Calculamos la razón de recompra dividiendo los pedidos reordenados entre el total de pedidos para cada cliente.
+        clients_reord['razon_recompra'] = clients_reord[1]/clients_reord['order_product']
+        clients_reord.sort_values('order_product', inplace=True, ascending=False)
+        clients_reord.reset_index(inplace=True)
+        clients_reord.index = range(1,len(clients_reord.index.values)+1)
+        clients_reord.index.name = 'rank'
+
+        # Creamos una nueva columna llamada 'top' que clasifica a los clientes en 10 grupos, cada grupo representa un decil de la contribución acumulada al total de pedidos.
+        n_divisones = 10
+        cumsum_pct = clients_reord['order_product'].cumsum() / clients_reord['order_product'].sum()
+        clients_reord['top'] = ((cumsum_pct * n_divisones).astype(int) + 1).clip(1, n_divisones)
+        clients_reord = clients_reord.iloc[:,[5, 0, 1, 2, 3, 4]]       
+        
+        # Creamos un DataFrame que muestra la cantidad de clientes en cada grupo de 'top'
+        rank_clients_reord = pd.DataFrame(clients_reord['top'].value_counts(ascending=True))
+
+        # Calculamos la razón de recompra para cada grupo de 'top' dividiendo la suma de pedidos reordenados entre la suma del total de pedidos para cada grupo.
+        razon_recompra=[]
+        for indice in rank_clients_reord.index.values:
+            razon_recompra.append(clients_reord[clients_reord['top'] == indice][1].sum()/clients_reord[clients_reord['top'] == indice]['order_product'].sum())
+        rank_clients_reord['razon_recompra'] = razon_recompra                
+        
+        fig_qorder_vs_qproducts = px.bar(
+            qorder_vs_qproducts,
+            x='number_of_products_per_order',
+            y='number_of_orders',
+            color='number_of_orders',
+            color_continuous_scale=winter_palette,
+            labels={
+                'number_of_orders': 'Volumen pedidos'.title(),
+                'number_of_products_per_order': 'Número de productos en el pedido'.title()
+            },
+            title='Distribución de la Cantidad de Productos por Pedido'.title()
+            )
+
+        # 3. Ajustes estéticos (Modo Oscuro y Limpieza)
+        fig_qorder_vs_qproducts.update_layout(
+            plot_bgcolor='rgba(0,0,0,0)',
+            paper_bgcolor='rgba(0,0,0,0)',
+            font_color="white",
+            coloraxis_showscale=False,
+            showlegend=False,
+            yaxis={'categoryorder':'total ascending'}, # Asegura que el más vendido esté arriba
+            margin=dict(t=50, b=50, l=50, r=50),
+            height=600 # Un poco más de altura para que los nombres respiren
+        )
+
+        fig_qorder_vs_qproducts.update_xaxes(type='category')
+        fig_qorder_vs_qproducts.update_yaxes(showgrid=True, gridcolor='rgba(255,255,255,0.1)')              
+
+        col1, col2 = st.columns(2)
+        with col1:
+
+        # --- ROW 1: Métricas de Alto Nivel ---
+            qprod_ord = df_order_prod.groupby('order_id')['product_id'].count()
+            c1, c2, c3 = st.columns(3, )
+            c1.metric("Media de cantidad de productos por pedido", 
+                        f"{qprod_ord.mean():.0f}",
+                        border=True)
+            c2.metric("Mediana de cantidad de productos por pedido", 
+                        f"{qprod_ord.median():.0f}",
+                        border=True)
+            c3.metric("Moda de cantidad de productos por pedido", 
+                        f"{qprod_ord.mode()[0]:.0f}",
+                        border=True)
+            
+            st.space()
+  
+            st.plotly_chart(fig_qorder_vs_qproducts, use_container_width=True)
+
+            st.info(r"""
+                El estudio del volumen de artículos por transacción permite entender el uso que el cliente le da a la plataforma (¿compras de conveniencia o abastecimiento total?). Los datos revelan una distribución asimétrica con una "larga cola":
+                
+                * 📦 **El "Sweet Spot" del Carrito**: La mayoría de los pedidos se concentran en un rango de **3 a 7 productos**, alcanzando su moda (el punto más alto) en los **5 artículos**. Esto sugiere que una gran parte de las transacciones son compras de reposición rápida o categorías específicas.
+
+                * 📊 **Tendencia Central y Dispersión**: El promedio se sitúa en $\approx 10$ artículos, pero la mediana ($50\%$) es de 8. Esta discrepancia, sumada a una desviación estándar de $7.5$, indica que aunque los carritos pequeños son más frecuentes, hay una presencia constante de pedidos medianos y grandes que elevan el ticket promedio.
+
+                * 🐉 **Carritos de Volumen Extremo**: Se observa una extensión de la distribución que llega hasta un máximo de **127 productos**. Es aquí donde residen los datos que anteriormente identificamos con el marcador `999` (aquellos que superaron la posición 64), representando a las familias o clientes institucionales que realizan compras masivas.
+
+                * 📉 **Compras de Conveniencia Única**: Un volumen considerable de usuarios realiza pedidos de un solo artículo ($n=1$), lo cual resalta la importancia de la logística de "última milla" para artículos de urgencia.
+
+                💡 **Insight Logístico**: Con el 75% de las órdenes conteniendo 14 productos o menos, la operación de picking (recolección en tienda) es altamente eficiente para pedidos pequeños. Sin embargo, el segmento de carritos con $>30$ productos requiere una gestión de transporte distinta para asegurar la integridad de los productos frescos detectados en el Top 20.
+            """)
+
+        fig_orders_per_client = px.bar(
+            dist_per_clients,
+            x='order_id',
+            y='clients',
+            color='clients',
+            color_continuous_scale=cool_palette,
+            labels={
+                'order_id': 'Pedidos por Cliente'.title(),
+                'clients': 'Volumen de clientes'.title()
+            },
+            title='Distribución de la Cantidad de Pedidos por Cliente'.title()
+            )
+
+        # 3. Ajustes estéticos (Modo Oscuro y Limpieza)
+        fig_orders_per_client.update_layout(
+            plot_bgcolor='rgba(0,0,0,0)',
+            paper_bgcolor='rgba(0,0,0,0)',
+            font_color="white",
+            coloraxis_showscale=False,
+            showlegend=False,
+            yaxis={'categoryorder':'total ascending'}, # Asegura que el más vendido esté arriba
+            margin=dict(t=50, b=50, l=50, r=50),
+            height=600 # Un poco más de altura para que los nombres respiren
+        )
+
+        fig_orders_per_client.update_xaxes(type='category')
+        fig_orders_per_client.update_yaxes(showgrid=True, gridcolor='rgba(255,255,255,0.1)')    
+
+        with col2:
+
+        # --- ROW 1: Métricas de Alto Nivel ---
+            c1, c2, c3 = st.columns(3, )
+            c1.metric("Media de cantidad de pedidos por cliente", 
+                        f"{orders_per_client.mean():.0f}",
+                        border=True)
+            c2.metric("Mediana de cantidad de pedidos por cliente", 
+                        f"{orders_per_client.median():.0f}",
+                        border=True)
+            c3.metric("Moda de cantidad de pedidos por cliente", 
+                        f"{orders_per_client.mode()[0]:.0f}",
+                        border=True)
+
+            st.plotly_chart(fig_orders_per_client, use_container_width=True)
+
+            st.info(r"""
+                El análisis de la frecuencia de compra por usuario único permite entender la penetración de la plataforma y el nivel de retención. Los datos revelan una base de usuarios con las siguientes características:
+
+                * 📈 **Dominancia de Nuevos Usuarios (Adquisición)**: El volumen más alto de clientes se concentra en **1 solo pedido (55,000+ usuarios)**. Esto indica una etapa de fuerte adquisición de usuarios, pero también resalta el reto de convertirlos en compradores recurrentes.
+
+                * 📊 **Medidas de Tendencia Central**: El promedio de órdenes por cliente es de $\approx 3.04$, mientras que la mediana se sitúa en 2.0. Esta diferencia entre la media y la mediana confirma un sesgo a la derecha; es decir, un grupo selecto de usuarios frecuentes está elevando el promedio general.
+
+                * 🐉 **La "Larga Cola" (Power Users)**: Aunque la frecuencia decae rápidamente, existe un segmento de clientes leales que han realizado hasta **28 pedidos**. Estos "Power Users" representan el activo más valioso para la estabilidad de ingresos de la plataforma, a pesar de ser una minoría estadística.
+
+                * 📉 **Tasa de Abandono Temprano**: Se observa una caída pronunciada entre el primer y el segundo pedido. El 75% de los clientes han realizado 4 pedidos o menos, lo que sugiere que los primeros 3 contactos con el servicio son críticos para asegurar la retención a largo plazo.
+
+                💡 **Insight de Marketing**: Existe una oportunidad masiva en la conversión de usuarios de "un solo uso" hacia el segundo y tercer pedido. Implementar programas de **lealtad o cupones de retención** tras la primera compra podría desplazar la mediana hacia la derecha y aumentar el Life Time Value (LTV) promedio.
+            """)
+
+        fig_rank_clients_reord = px.bar(
+            rank_clients_reord,
+            x='count',
+            y='razon_recompra',
+            color='razon_recompra',
+            color_continuous_scale='Viridis',
+            labels={
+                'count': 'Cantidad de Clientes por Decil'.title(),
+                'razon_recompra': 'Razón de Recompra'.title()
+            },
+            title='Razón de Recompra por Decil de Clientes'.title()
+            )
+
+        # 3. Ajustes estéticos (Modo Oscuro y Limpieza)
+        fig_rank_clients_reord.update_layout(
+            plot_bgcolor='rgba(0,0,0,0)',
+            paper_bgcolor='rgba(0,0,0,0)',
+            font_color="white",
+            coloraxis_showscale=False,
+            showlegend=False,
+            yaxis={'categoryorder':'total ascending'}, # Asegura que el más vendido esté arriba
+            margin=dict(t=50, b=50, l=50, r=50),
+            height=600 # Un poco más de altura para que los nombres respiren
+        )
+
+        fig_rank_clients_reord.update_xaxes(type='category')
+        fig_rank_clients_reord.update_yaxes(showgrid=True, gridcolor='rgba(255,255,255,0.1)')
+
+        st.space()
+
+        col1, col2, col3 = st.columns(3) # Espacio para respirar entre métricas y gráfica
+
+        col1.metric("10% de las transacciones",
+                    f"{rank_clients_reord['count'][0:1].sum():,} Clientes",
+                    delta=f"{rank_clients_reord['count'][0:1].sum()/rank_clients_reord['count'].sum():.1%} de la Base Total")  
+
+        col2.metric("50% de las transacciones",
+                    f"{rank_clients_reord['count'][0:5].sum():,} Clientes",
+                    delta=f"{rank_clients_reord['count'][0:5].sum()/rank_clients_reord['count'].sum():.1%} de la Base Total")
+
+        col3.metric("90% de las transacciones",
+                    f"{rank_clients_reord['count'][0:9].sum():,} Clientes",
+                    delta=f"{rank_clients_reord['count'][0:9].sum()/rank_clients_reord['count'].sum():.1%} de la Base Total")         
+
+        st.plotly_chart(fig_rank_clients_reord, use_container_width=True)        
+
+        st.info(r"""
+            Se aplicó una división por deciles donde cada grupo representa el **10% del volumen total de artículos comprados**, permitiendo diseccionar la base de usuarios según su intensidad transaccional.
+
+            1. 🎯 **Concentración de Usuarios de Alto Valor (VIPs)**
+
+                Los datos revelan una asimetría crítica en la generación de volumen:
+                
+                * 🥇 **El Núcleo Transaccional (Decil 1)**: Solo **2,209 usuarios** (apenas el $1.48\%$ de la base total) son responsables del primer $10\%$ de las ventas. Estos clientes "ultra-activos" son los pilares de la estabilidad operativa.
+
+                * 🐉 **Dispersión en la Base (Decil 10)**: En contraste, el último $10\%$ del volumen es generado por **61,966 usuarios**, lo que evidencia un segmento de clientes ocasionales o en fase de prueba.
+
+                * 💎 **Ratio de Intensidad**: Un cliente del Decil 1 es, en promedio, **28 veces más activo** que un cliente del Decil 10.
+            
+            2. 📈 **Correlación Actividad-Lealtad (Gradiente de Retención)**
+            
+                Se confirma que a mayor volumen de compra, mayor es la fidelidad al catálogo:
+
+                * 🤝 **Máxima Fidelidad (Decil 1)**: Presenta una tasa de recompra del $77.3\%$. Este grupo prácticamente ha automatizado su consumo.
+
+                * 📉 **Gradiente de Descenso**: Se observa una degradación constante y predecible de aproximadamente $5\%$ por decil.
+
+                * ⚠️ **Umbral Crítico**: Incluso en el Decil 10, la recompra se mantiene en un $42.2\%$, lo que indica que Instacart tiene una "barrera de entrada" de lealtad alta; casi la mitad de los clientes ocasionales tienden a repetir algún producto.
+                """)   
+
     else:
         # Mensaje amigable si el usuario filtra demasiado
         st.warning("⚠️ No se encontraron pedidos para la combinación de filtros seleccionada.")
