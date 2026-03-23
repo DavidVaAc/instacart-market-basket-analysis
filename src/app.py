@@ -157,8 +157,7 @@ try:
     df_departments = load_departments()
     departments = st.sidebar.multiselect("Selecciona los departamentos:", 
                            options=sorted(df_departments['department'].unique()), 
-                           default=sorted(df_departments['department'].unique()),
-                           format_func=lambda x: x.title()
+                           default=sorted(df_departments['department'].unique())
                             )
     df_departments = df_departments[df_departments['department'].isin(departments)]
 
