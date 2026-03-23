@@ -49,7 +49,9 @@ Esta aplicación interactiva presenta los hallazgos clave del análisis de compo
 *Explora las métricas de lealtad, tiempos de compra y la eficiencia del catálogo.*
 """)
 
-st.info(r"""### 📊 Resumen Ejecutivo: Consumer Insights & Market Basket Analysis
+st.header("📊 Resumen Ejecutivo")
+
+st.info(r"""
 
 * **Contexto:** Este proyecto analiza un ecosistema masivo de datos transaccionales de Instacart (datos de 2017) para descifrar los patrones de compra y lealtad del usuario moderno. Este análisis transforma datos crudos de transacciones en inteligencia de negocio, identificando los motores de crecimiento y retención de la plataforma.
 
@@ -115,8 +117,17 @@ try:
 
     # 1. Definimos el orden lógico para que los checkboxes no salgan alfabéticos
 
-    st.sidebar.header("🛠️ Filtros de Análisis")
-    st.sidebar.write("Selecciona los días para visualizar:")
+    st.sidebar.markdown("""
+        ### 📑 Índice
+        - [📊 Resumen Ejecutivo](#instacart-market-basket-analysis)
+        - [⏳ Dinámicas Temporales](#dinamicas-temporales)
+        - [📦 Arquitectura del Consumo](#arquitectura-del-consumo)
+        - [👤 Perfil del Consumidor](#perfil-del-consumidor)
+        - [📫 Contacto y Colaboración](#contacto-y-colaboracion)
+        """)
+
+    st.sidebar.subheader("🛠️ Filtros de Análisis")
+    st.sidebar.write("📅 Selecciona los días para visualizar:")
 
     # 2. Lista para guardar los días que el usuario marque
     dias_seleccionados = []
@@ -136,7 +147,7 @@ try:
         df_orders = df_orders[df_orders['order_dow'].isin(dias_seleccionados)]
 
     st.sidebar.markdown("---")
-    st.sidebar.write("Selecciona el Rango de Horario:")
+    st.sidebar.write("⏰ Selecciona el Rango de Horario:")
 
     # Slider de rango para las 24 horas
     hora_inicio, hora_fin = st.sidebar.slider(
@@ -155,7 +166,7 @@ try:
 
     # Filtro de Departamentos
     df_departments = load_departments()
-    departments = st.sidebar.multiselect("Selecciona los departamentos:", 
+    departments = st.sidebar.multiselect("📦 Selecciona los departamentos:", 
                            options=sorted(df_departments['department'].unique()), 
                            default=sorted(df_departments['department'].unique()),
                            format_func=lambda x: x.title()
@@ -621,7 +632,7 @@ try:
         
         st.divider()
 
-        st.header("👤 Perfil de Cliente y Mecánicas de Consumo")
+        st.header("👤 Perfil del Consumidor")
 
         st.space()  
 
