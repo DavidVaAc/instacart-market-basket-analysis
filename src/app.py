@@ -101,6 +101,11 @@ def load_departments():
     departments = pd.read_csv(path, sep=';')
     return departments
 
+delta1 = "yellow" # Color para los deltas en las métricas
+delta2 = "blue" # Color para los deltas en las métricas
+delta3 = "violet" # Color para los deltas en las métricas
+delta4 = "yellow" # Color para los deltas en las métricas
+
 try:
     df_orders = load_orders()
     dias_dict = {0: 'Domingo', 1: 'Lunes', 2: 'Martes', 3: 'Miércoles', 4: 'Jueves', 5: 'Viernes', 6: 'Sábado'}
@@ -187,17 +192,12 @@ try:
 
         st.space()
 
-        # --- ROW 1: Métricas de Alto Nivel ---
-        col1, col2, col3 = st.columns(3, )
-        col1.metric("Total de Órdenes", f"{len(df_filtered):,}")
-        col2.metric("Promedio Hora de Compra", f"{df_filtered['order_hour_of_day'].mean():.1f} hrs")
-        col3.metric("Día Pico", f"{df_filtered['order_dow'].mode()[0]}")
-
-        st.space()
-
         c1, c2 = st.columns(2)
 
         with c1:
+
+            st.metric("Promedio Hora de Compra", f"{df_filtered['order_hour_of_day'].mean():.1f} hrs")
+
             # 1. Preparación de datos
             oders_by_hour = df_filtered.groupby('order_hour_of_day').size().reset_index(name='volumen')
 
@@ -244,6 +244,9 @@ try:
             """)
 
         with c2:
+
+            st.metric("Día Pico", f"{df_filtered['order_dow'].mode()[0]}")
+
             # 1. Preparación de los datos (manteniendo tu lógica de nombres de días)
             bar_insta_orders = df_filtered.groupby('order_dow').size().reset_index(name='volumen')
             nombres_dias = ['Domingo', 'Lunes', 'Martes', 'Miércoles', 'Jueves', 'Viernes', 'Sábado']
@@ -345,8 +348,22 @@ try:
         )
 
         # 5. Desplegar en Streamlit
-
         st.space()
+        st.space()
+
+        c1, c2 = st.columns(2)
+        c1.metric("Media", 
+                    f"{df_filtered['days_since_prior_order'].mean():.0f}",
+                    delta="Días desde la compra previa",
+                    delta_color=delta1,
+                    delta_arrow="off")
+        c2.metric("Mediana", 
+                    f"{df_filtered['days_since_prior_order'].median():.0f}",
+                    delta="Días desde la compra previa",
+                    delta_color=delta1,
+                    delta_arrow="off")
+
+        st.space()        
 
         st.plotly_chart(fig_reorder, use_container_width=True)
 
@@ -415,14 +432,11 @@ try:
         rank_reordered_vs_non['razon_recompra'] = razon_recompra           
 
         # --- ROW 1: Métricas de Alto Nivel ---
-        col1, col2, col3 = st.columns(3, )
+        col1, col2 = st.columns(2)
         col1.metric("Producto Estelelar", 
                     top_reord_data.iloc[0]['product_name'])
         col2.metric("Departamento Dominante", 
                     departments_dist.iloc[0]['department'])
-        col3.metric("50% De Transacciones", 
-                    f"{rank_reordered_vs_non['count'][0:5].sum()} Productos",
-                    delta=f"{rank_reordered_vs_non['count'][0:5].sum()/rank_reordered_vs_non['count'].sum():.1%} del Catálogo")
         
         st.space()
 
@@ -546,6 +560,30 @@ try:
 
 💡 Insight de Operación: La logística de Instacart es, esencialmente, una cadena de frío y frescos. Más del 60% de la operación se concentra en departamentos con productos sensibles a la temperatura y al tiempo. Cualquier optimización en la ruta de entrega o en el proceso de selección (picking) en estas categorías tendrá un impacto desproporcionado en la rentabilidad y satisfacción final.
 """)
+        st.space()
+        st.space()
+
+        col1, col2, col3 = st.columns(3) # Espacio para respirar entre métricas y gráfica
+
+        col1.metric("10% de las transacciones",
+                    f"{rank_reordered_vs_non['count'][0:1].sum():,} Productos",
+                    delta=f"{rank_reordered_vs_non['count'][0:1].sum()/rank_reordered_vs_non['count'].sum():.2%} del Catálogo",
+                    delta_color=delta1,
+                    delta_arrow="off")  
+
+        col2.metric("50% de las transacciones",
+                    f"{rank_reordered_vs_non['count'][0:5].sum():,} Productos",
+                    delta=f"{rank_reordered_vs_non['count'][0:5].sum()/rank_reordered_vs_non['count'].sum():.2%} del Catálogo",
+                    delta_color=delta1,
+                    delta_arrow="off")
+
+        col3.metric("90% de las transacciones",
+                    f"{rank_reordered_vs_non['count'][0:9].sum():,} Productos",
+                    delta=f"{rank_reordered_vs_non['count'][0:9].sum()/rank_reordered_vs_non['count'].sum():.2%} del Catálogo",
+                    delta_color=delta1,
+                    delta_arrow="off") 
+
+        st.space()          
      
         st.plotly_chart(fig_rank_reordered_vs_non, use_container_width=True)
 
@@ -659,16 +697,17 @@ Para entender la estructura del catálogo, se implementó una segmentación de p
 
         # --- ROW 1: Métricas de Alto Nivel ---
             qprod_ord = df_order_prod.groupby('order_id')['product_id'].count()
-            c1, c2, c3 = st.columns(3, )
-            c1.metric("Media de cantidad de productos por pedido", 
+            c1, c2 = st.columns(2)
+            c1.metric("Media", 
                         f"{qprod_ord.mean():.0f}",
-                        border=True)
-            c2.metric("Mediana de cantidad de productos por pedido", 
+                        delta="Productos por pedido",
+                        delta_color=delta2,
+                        delta_arrow="off")
+            c2.metric("Mediana", 
                         f"{qprod_ord.median():.0f}",
-                        border=True)
-            c3.metric("Moda de cantidad de productos por pedido", 
-                        f"{qprod_ord.mode()[0]:.0f}",
-                        border=True)
+                        delta="Productos por pedido",
+                        delta_color=delta2,
+                        delta_arrow="off")
             
             st.space()
   
@@ -719,16 +758,19 @@ Para entender la estructura del catálogo, se implementó una segmentación de p
         with col2:
 
         # --- ROW 1: Métricas de Alto Nivel ---
-            c1, c2, c3 = st.columns(3, )
-            c1.metric("Media de cantidad de pedidos por cliente", 
+            c1, c2 = st.columns(2)
+            c1.metric("Media", 
                         f"{orders_per_client.mean():.0f}",
-                        border=True)
-            c2.metric("Mediana de cantidad de pedidos por cliente", 
+                        delta="Pedidos por cliente",
+                        delta_color=delta3,
+                        delta_arrow="off")
+            c2.metric("Mediana", 
                         f"{orders_per_client.median():.0f}",
-                        border=True)
-            c3.metric("Moda de cantidad de pedidos por cliente", 
-                        f"{orders_per_client.mode()[0]:.0f}",
-                        border=True)
+                        delta="Pedidos por cliente",
+                        delta_color=delta3,
+                        delta_arrow="off")
+            
+            st.space()
 
             st.plotly_chart(fig_orders_per_client, use_container_width=True)
 
@@ -776,19 +818,29 @@ Para entender la estructura del catálogo, se implementó una segmentación de p
 
         st.space()
 
-        col1, col2, col3 = st.columns(3) # Espacio para respirar entre métricas y gráfica
+        st.space()
+
+        col1, col2, col3 = st.columns(3) # Espacio para respirar entre métricas y gráfica  
 
         col1.metric("10% de las transacciones",
                     f"{rank_clients_reord['count'][0:1].sum():,} Clientes",
-                    delta=f"{rank_clients_reord['count'][0:1].sum()/rank_clients_reord['count'].sum():.1%} de la Base Total")  
+                    delta=f"{rank_clients_reord['count'][0:1].sum()/rank_clients_reord['count'].sum():.2%} de la Base Total",
+                    delta_color=delta4,
+                    delta_arrow="off")  
 
         col2.metric("50% de las transacciones",
                     f"{rank_clients_reord['count'][0:5].sum():,} Clientes",
-                    delta=f"{rank_clients_reord['count'][0:5].sum()/rank_clients_reord['count'].sum():.1%} de la Base Total")
+                    delta=f"{rank_clients_reord['count'][0:5].sum()/rank_clients_reord['count'].sum():.2%} de la Base Total",
+                    delta_color=delta4,
+                    delta_arrow="off")
 
         col3.metric("90% de las transacciones",
                     f"{rank_clients_reord['count'][0:9].sum():,} Clientes",
-                    delta=f"{rank_clients_reord['count'][0:9].sum()/rank_clients_reord['count'].sum():.1%} de la Base Total")         
+                    delta=f"{rank_clients_reord['count'][0:9].sum()/rank_clients_reord['count'].sum():.2%} de la Base Total",
+                    delta_color=delta4,
+                    delta_arrow="off") 
+
+        st.space()    
 
         st.plotly_chart(fig_rank_clients_reord, use_container_width=True)        
 
