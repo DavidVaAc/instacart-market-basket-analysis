@@ -119,14 +119,15 @@ try:
 
     st.sidebar.markdown("""
         ### 📑 Índice
-        - [📊 Resumen Ejecutivo](#instacart-market-basket-analysis)
-        - [⏳ Dinámicas Temporales](#dinamicas-temporales)
-        - [📦 Arquitectura del Consumo](#arquitectura-del-consumo)
-        - [👤 Perfil del Consumidor](#perfil-del-consumidor)
-        - [📫 Contacto y Colaboración](#contacto-y-colaboracion)
+        - 📊 [Resumen Ejecutivo](#instacart-market-basket-analysis)
+        - ⏳ [Dinámicas Temporales](#dinamicas-temporales)
+        - 📦 [Arquitectura del Consumo](#arquitectura-del-consumo)
+        - 👤 [Perfil del Consumidor](#perfil-del-consumidor)
+        - 📫 [Contacto y Colaboración](#contacto-y-colaboracion)
         """)
-
-    st.sidebar.subheader("🛠️ Filtros de Análisis")
+    
+    st.sidebar.markdown("---")
+    
     st.sidebar.write("📅 Selecciona los días para visualizar:")
 
     # 2. Lista para guardar los días que el usuario marque
@@ -165,11 +166,14 @@ try:
     st.sidebar.markdown("---")
 
     # Filtro de Departamentos
+
+    st.sidebar.write("📦 Selecciona los Departamentos:")
     df_departments = load_departments()
-    departments = st.sidebar.multiselect("📦 Selecciona los departamentos:", 
+    departments = st.sidebar.multiselect("📦 Selecciona los Departamentos:", 
                            options=sorted(df_departments['department'].unique()), 
                            default=sorted(df_departments['department'].unique()),
-                           format_func=lambda x: x.title()
+                           format_func=lambda x: x.title(),
+                           label_visibility="collapsed"
                             )
     df_departments = df_departments[df_departments['department'].isin(departments)]
 
