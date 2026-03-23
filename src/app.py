@@ -447,13 +447,6 @@ try:
         for rank in range(1,n_divisones+1):
             razon_recompra.append(reordered_vs_non[reordered_vs_non['top'] == rank][1].sum()/reordered_vs_non[reordered_vs_non['top'] == rank]['total'].sum())
         rank_reordered_vs_non['razon_recompra'] = razon_recompra           
-
-        # --- ROW 1: Métricas de Alto Nivel ---
-        col1, col2 = st.columns(2)
-        col1.metric("Producto Estelelar", 
-                    top_reord_data.iloc[0]['product_name'])
-        col2.metric("Departamento Dominante", 
-                    departments_dist.iloc[0]['department'])
         
         st.space()
 
@@ -490,6 +483,11 @@ try:
         # 4. Desplegar en Streamlit con su Insight de Negocio
         c1, c2 = st.columns(2)
         with c1:
+            st.metric("Producto Estelelar", 
+                    top_reord_data.iloc[0]['product_name'])
+            
+            st.space()
+            
             st.plotly_chart(fig_top_reord, width='stretch')
 
             st.info(r"""Identificar los artículos que los usuarios vuelven a solicitar de forma recurrente permite descifrar los "básicos" indispensables del hogar. Al analizar este segmento, observamos una consistencia casi perfecta con el volumen total de ventas, pero con matices interesantes:
@@ -563,6 +561,11 @@ try:
         fig_depts.update_yaxes(showgrid=False)
 
         with c2:
+            st.metric("Departamento Dominante", 
+                    departments_dist.iloc[0]['department'])
+        
+            st.space()
+
             st.plotly_chart(fig_depts, width='stretch')
 
             st.info(r"""Entender la macro-estructura de los pedidos permite identificar qué categorías sostienen la operación logística y cuáles son los verdaderos "imanes" de tráfico. Al analizar el volumen total por departamento, la jerarquía del sistema se revela con total claridad:
