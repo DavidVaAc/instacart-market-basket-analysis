@@ -446,9 +446,7 @@ try:
         razon_recompra =[]
         for rank in range(1,n_divisones+1):
             razon_recompra.append(reordered_vs_non[reordered_vs_non['top'] == rank][1].sum()/reordered_vs_non[reordered_vs_non['top'] == rank]['total'].sum())
-        rank_reordered_vs_non['razon_recompra'] = razon_recompra           
-        
-        st.space()
+        rank_reordered_vs_non['razon_recompra'] = razon_recompra 
 
         # 2. Crear la gráfica horizontal con Plotly Express
         fig_top_reord = px.bar(
