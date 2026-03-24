@@ -220,11 +220,5 @@ env/
 # Archivos de sistema
 .DS_Store
 
-# Capturas de pantalla y gráficos de Streamlit
-arquitectura_del_consumo.png
-dinamicas_temporales.png
-arquitectura_del_consumo_cut.png
-arquitectura_del_consumo_linkedin.png
-dinamicas_temporales_cut.png
-dinamicas_temporales_linkedin.png
-image_resizer.ipynb
+# Directorio local
+local/
