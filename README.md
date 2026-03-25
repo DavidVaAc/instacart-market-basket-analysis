@@ -81,6 +81,6 @@ Utilizando un enfoque de deciles de volumen, se descubrió:
 
 ## 📫 Contacto
 * 💼 [Portafolio](https://davidvaac.github.io/DavidVaAc/#)
-* 🌐 [Linkedin](www.linkedin.com/in/david-fernando-valle-acosta-b18268265)
+* 🌐 [Linkedin](https://linkedin.com/in/david-fernando-valle-acosta)
 * 📋 [Curriculum](https://drive.google.com/file/d/1epmNOV5wLOiH2na0B_kiDaaevGUPrUdF/view?usp=sharing)
 * ✉️ [Email](mailto:davidfervalle@gmail.com)
